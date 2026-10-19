@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Faseeh — Arabic Pronunciation Assistant</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Amiri+Quran&family=Tajawal:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Guarded so a slow/blocked CDN doesn't throw and halt the page.
+    if (window.tailwind) tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'Tajawal', 'system-ui', 'sans-serif'],
+            arabic: ['Amiri', 'serif'],
+            quran: ['"Amiri Quran"', 'Amiri', 'serif'],
+            tajawal: ['Tajawal', 'sans-serif'],
+          },
+          colors: {
+            ink: '#1f2a37',
+            parchment: '#faf8f3',
+            brand: {
+              50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 500: '#10b981',
+              600: '#059669', 700: '#047857', 800: '#065f46', 900: '#064e3b',
+            },
+          },
+          boxShadow: {
+            soft: '0 1px 2px rgba(16,24,40,.04), 0 8px 24px -6px rgba(16,24,40,.08)',
+            lift: '0 2px 4px rgba(16,24,40,.06), 0 18px 40px -12px rgba(16,24,40,.18)',
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    /* Recording pulse ring */
+    @keyframes pulse-ring {
+      0%   { box-shadow: 0 0 0 0 rgba(220, 38, 38, .55); }
+      70%  { box-shadow: 0 0 0 22px rgba(220, 38, 38, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+    }
+    .is-recording { animation: pulse-ring 1.4s cubic-bezier(.4,0,.6,1) infinite; }
+
+    /* Live waveform: bar heights are driven by the Web Audio AnalyserNode (see LiveWaveform). */
+    .wave-bar {
+      transform-origin: center;
+      transform: scaleY(.12);
+      transition: transform 70ms linear;
+      will-change: transform;
+    }
+    /* Fallback only when the Web Audio API is unavailable: a decorative CSS animation. */
+    @keyframes wave { 0%,100% { transform: scaleY(.3); } 50% { transform: scaleY(1); } }
+    .wave-bar.is-fallback { transition: none; animation: wave 1s ease-in-out infinite; }
+
+    /* Fade/slide for content swaps */
+    .reveal { animation: reveal .45s ease-out both; }
+    @keyframes reveal { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    /* ----- Mushaf-style verse block ----- */
+    .surah-block {
+      text-align: justify;
+      text-align-last: center;
+      line-height: 2.35;
+      word-spacing: .08em;
+    }
+    .ayah {
+      cursor: pointer;
+      border-radius: .6rem;
+      padding: .05em .15em;
+      transition: background-color .2s, box-shadow .2s;
+      -webkit-box-decoration-break: clone;
+      box-decoration-break: clone;
+      outline: none;
+    }
+    .ayah:hover { background-color: rgba(16, 185, 129, .07); }
+    .ayah:focus-visible { box-shadow: 0 0 0 2px #10b981; }
+    .ayah.is-selected { background-color: rgba(16, 185, 129, .14); }
+    .ayah-num {
+      color: #047857;
+      font-family: 'Amiri', serif;
+      font-size: .78em;
+      padding: 0 .12em;
+      white-space: nowrap;
+    }
+
+    /* Highlighted error word */
+    .quran-word { transition: color .3s, background .3s; }
+    .word-error {
+      color: #b91c1c;
+      background: linear-gradient(transparent 14%, #fef3c7 14%, #fef3c7 90%, transparent 90%);
+      border-radius: .35rem;
+      text-decoration: underline wavy #dc2626;
+      text-underline-offset: .5em;
+      text-decoration-thickness: 2px;
+    }
+    .word-error.is-active { box-shadow: 0 0 0 2px #fca5a5; }
+
+    /* Highlighted part of the phonetic spelling */
+    .ph-hit { color: #047857; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
+
+    /* Hide scrollbar on the surah tabs on small screens */
+    .no-scrollbar { scrollbar-width: none; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+  </style>
+</head>
+
+<body class="bg-parchment text-ink font-sans antialiased min-h-screen">
+
+  <!-- ===== Header ===== -->
+  <header class="border-b border-stone-200/70 bg-white/70 backdrop-blur sticky top-0 z-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-brand-700 text-white grid place-items-center font-arabic text-xl leading-none pb-1">ف</div>
+        <div>
+          <p class="font-semibold tracking-tight leading-none">Faseeh <span class="font-tajawal text-brand-700">فصيح</span></p>
+          <p class="text-xs text-stone-500 mt-0.5">Arabic Pronunciation Assistant</p>
+        </div>
+      </div>
+      <div class="hidden sm:flex items-center gap-2 text-sm text-stone-500">
+        <span class="inline-block w-2 h-2 rounded-full bg-brand-500"></span>
+        Practice Session · Juz' 30
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== Main three-column layout ===== -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 lg:py-10">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+
+      <!-- ========== LEFT: Context & Audio ========== -->
+      <aside class="lg:col-span-3 space-y-6 order-2 lg:order-1 lg:sticky lg:top-24">
+
+        <!-- Citation Card -->
+        <section class="bg-white rounded-2xl shadow-soft border border-stone-100 p-6" aria-live="polite">
+          <p class="text-[11px] font-semibold uppercase tracking-[.14em] text-stone-400">Citation</p>
+          <div id="citationBody">
+            <h2 class="mt-3 text-lg font-semibold" id="citeSurahEn">Surah Al-Ikhlas</h2>
+            <p class="font-tajawal text-brand-700 text-base" dir="rtl" id="citeSurahAr">سورة الإخلاص</p>
+            <p class="text-xs text-stone-400 mt-1" id="citeMeaning">The Sincerity</p>
+
+            <dl class="mt-5 grid grid-cols-2 gap-3 text-sm">
+              <div class="rounded-xl bg-brand-50 px-3 py-2.5 col-span-2 flex items-baseline justify-between">
+                <dt class="text-brand-700 text-xs font-medium">Ayah</dt>
+                <dd class="font-semibold text-brand-900"><span id="citeAyah" class="text-xl">1</span> <span class="text-stone-400 text-xs font-normal" id="citeAyahTotal">of 4</span></dd>
+              </div>
+              <div class="rounded-xl bg-stone-50 px-3 py-2.5">
+                <dt class="text-stone-400 text-xs">Surah</dt>
+                <dd class="font-semibold mt-0.5" id="citeSurahNum">112</dd>
+              </div>
+              <div class="rounded-xl bg-stone-50 px-3 py-2.5">
+                <dt class="text-stone-400 text-xs">Juz'</dt>
+                <dd class="font-semibold mt-0.5">30</dd>
+              </div>
+              <div class="rounded-xl bg-stone-50 px-3 py-2.5 col-span-2">
+                <dt class="text-stone-400 text-xs">Revelation</dt>
+                <dd class="font-semibold mt-0.5" id="citeRevelation">Makki</dd>
+              </div>
+            </dl>
+          </div>
+        </section>
+
+        <!-- Reference Audio Card -->
+        <section class="bg-white rounded-2xl shadow-soft border border-stone-100 p-6">
+          <p class="text-[11px] font-semibold uppercase tracking-[.14em] text-stone-400">Reference Audio</p>
+          <p class="mt-3 text-sm text-stone-600 leading-relaxed">Listen to a model recitation of the selected ayah before recording your own.</p>
+
+          <button id="refAudioBtn" type="button"
+            class="mt-5 w-full flex items-center gap-3 rounded-xl border border-brand-200 bg-brand-50 hover:bg-brand-100 text-brand-800 px-4 py-3 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500">
+            <span id="refAudioIcon" class="w-9 h-9 shrink-0 rounded-full bg-brand-700 text-white grid place-items-center"></span>
+            <span class="leading-snug">
+              <span class="block text-sm font-medium">Listen to Professional Reader (Al-Sudais)</span>
+              <span class="block text-xs text-brand-700/80 mt-0.5" id="refAudioLabel">Al-Ikhlas · Ayah 1</span>
+            </span>
+          </button>
+
+          <div class="mt-4 h-1.5 rounded-full bg-stone-100 overflow-hidden">
+            <div id="refProgress" class="h-full w-0 bg-brand-500 transition-[width] duration-100 ease-linear"></div>
+          </div>
+          <div class="mt-2 flex justify-between text-xs text-stone-400">
+            <span id="refTime">0:00</span><span id="refDuration">0:00</span>
+          </div>
+        </section>
+      </aside>
+
+      <!-- ========== CENTER: Primary Workspace ========== -->
+      <section class="lg:col-span-6 order-1 lg:order-2">
+        <div class="bg-white rounded-3xl shadow-lift border border-stone-100 px-5 sm:px-10 py-8 sm:py-10">
+
+          <!-- Surah navigation -->
+          <nav aria-label="Choose a surah" class="-mx-1 overflow-x-auto no-scrollbar">
+            <div id="surahTabs" role="tablist" class="inline-flex min-w-full gap-1 rounded-2xl bg-stone-100 p-1"></div>
+          </nav>
+
+          <div class="mt-6 flex items-center justify-between gap-3">
+            <p class="text-[11px] font-semibold uppercase tracking-[.14em] text-stone-400">Tap an ayah to practise it</p>
+            <span id="statusPill" class="shrink-0 text-xs font-medium rounded-full px-3 py-1 bg-stone-100 text-stone-500">Ready</span>
+          </div>
+
+          <!-- Reading window -->
+          <article id="readingWindow" class="mt-4 rounded-2xl bg-gradient-to-b from-parchment to-white border border-stone-100 px-4 sm:px-8 py-8 sm:py-10">
+            <!-- Surah header band -->
+            <div class="mx-auto max-w-sm rounded-xl border border-brand-200 bg-brand-50/60 px-4 py-2 flex items-center justify-between text-brand-800">
+              <span class="text-xs font-medium" id="headerMeta">Surah 112 · 4 Ayat</span>
+              <span class="font-arabic text-xl" dir="rtl" id="headerName">سُورَةُ الإِخْلَاصِ</span>
+            </div>
+
+            <!-- Bismillah -->
+            <p dir="rtl" lang="ar" class="font-quran text-center text-ink/90 text-2xl sm:text-3xl mt-6 leading-loose" aria-label="Bismillah">
+              بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+            </p>
+
+            <!-- Verses: rendered from SURAHS data -->
+            <p id="surahText" dir="rtl" lang="ar"
+               class="surah-block font-quran text-ink text-3xl sm:text-4xl mt-6"></p>
+          </article>
+
+          <!-- Selected ayah meaning -->
+          <div class="mt-5 text-center">
+            <p class="text-sm text-stone-500 italic" id="ayahMeaning"></p>
+            <p class="text-[11px] text-stone-400 mt-1">Approximate meaning, for orientation only</p>
+          </div>
+
+          <!-- Action Area -->
+          <div class="mt-8 flex flex-col items-center">
+            <!-- Live microphone visualizer (Web Audio API AnalyserNode) -->
+            <div id="waveform" class="hidden h-10 mb-5 items-center gap-[3px] text-red-500" aria-hidden="true"></div>
+            <p id="recordTimer" class="hidden -mt-3 mb-4 text-xs font-medium tabular-nums text-red-500">0.0 s</p>
+
+            <button id="recordBtn" type="button"
+              class="group inline-flex items-center gap-3 rounded-full bg-brand-700 hover:bg-brand-800 text-white pl-5 pr-7 py-4 text-base font-semibold shadow-lift transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-200 disabled:cursor-wait">
+              <span id="recordIcon" class="w-9 h-9 rounded-full bg-white/15 grid place-items-center"></span>
+              <span id="recordLabel">Record</span>
+            </button>
+
+            <p id="recordHint" class="mt-4 text-xs text-stone-400 text-center">Tap to start, then recite the highlighted ayah clearly.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== RIGHT: Dynamic Feedback ========== -->
+      <aside class="lg:col-span-3 order-3 lg:sticky lg:top-24">
+        <section class="bg-white rounded-2xl shadow-soft border border-stone-100 p-6 min-h-[22rem]">
+          <div class="flex items-center justify-between gap-2">
+            <p class="text-[11px] font-semibold uppercase tracking-[.14em] text-stone-400">Feedback</p>
+            <span id="fbSource" class="hidden text-[11px] font-medium rounded-full px-2 py-0.5"></span>
+          </div>
+
+          <!-- Default State -->
+          <div id="feedbackDefault" class="mt-6 flex flex-col items-center justify-center text-center py-10">
+            <div class="w-14 h-14 rounded-full bg-stone-50 border border-dashed border-stone-300 grid place-items-center text-stone-400">
+              <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h3l3-8 4 16 3-8h5"/></svg>
+            </div>
+            <p class="mt-4 font-medium text-stone-500">Awaiting recording...</p>
+            <p class="mt-1 text-xs text-stone-400 max-w-[14rem]">Your pronunciation analysis will appear here.</p>
+          </div>
+
+          <!-- Success State -->
+          <div id="feedbackOk" class="hidden mt-5 text-center">
+            <div class="mx-auto w-16 h-16 rounded-full bg-brand-50 text-brand-700 grid place-items-center">
+              <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+            </div>
+            <h3 class="mt-4 font-semibold text-ink">Well recited</h3>
+            <p class="mt-1 text-sm text-stone-500">No word stood out from the reference recitation.</p>
+            <div class="mt-5 rounded-xl bg-stone-50 px-4 py-3">
+              <p class="text-xs text-stone-400">Similarity to the reference</p>
+              <p class="mt-1 text-3xl font-semibold text-brand-700"><span id="okScore">–</span><span class="text-base font-medium text-stone-400">/100</span></p>
+            </div>
+            <div class="mt-5 flex gap-2">
+              <button id="okHearBtn" type="button" class="flex-1 text-sm font-medium rounded-lg border border-stone-200 hover:bg-stone-50 px-3 py-2 transition">Hear reference</button>
+              <button id="nextAyahBtn" type="button" class="flex-1 text-sm font-medium rounded-lg bg-brand-700 hover:bg-brand-800 text-white px-3 py-2 transition">Next ayah</button>
+            </div>
+          </div>
+
+          <!-- Unclear State (also used for "too short" pre-validation and request failures) -->
+          <div id="feedbackUnclear" class="hidden mt-5">
+            <div class="flex items-start gap-3">
+              <span class="w-8 h-8 shrink-0 rounded-full bg-amber-50 text-amber-600 grid place-items-center">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 16.8v.01"/><circle cx="12" cy="12" r="9"/></svg>
+              </span>
+              <div>
+                <h3 class="font-semibold text-ink" id="unclearTitle">Couldn't analyze this recording</h3>
+                <p class="text-sm text-stone-500 mt-1 leading-relaxed" id="unclearMsg"></p>
+              </div>
+            </div>
+            <ul class="mt-5 space-y-2 text-sm text-stone-600">
+              <li class="flex gap-2"><span class="text-brand-600">•</span>Recite only the selected ayah, from its first word.</li>
+              <li class="flex gap-2"><span class="text-brand-600">•</span>Move to a quieter place, closer to the microphone.</li>
+              <li class="flex gap-2"><span class="text-brand-600">•</span>Wait a moment after tapping Record before you start.</li>
+            </ul>
+          </div>
+
+          <!-- Error State (hidden initially) -->
+          <div id="feedbackError" class="hidden mt-5">
+            <div class="flex items-start gap-3">
+              <span class="w-8 h-8 shrink-0 rounded-full bg-red-50 text-red-600 grid place-items-center">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 8v5M12 16.5v.01"/><circle cx="12" cy="12" r="9"/></svg>
+              </span>
+              <div>
+                <h3 class="font-semibold text-ink">Correction Feedback</h3>
+                <p class="text-xs text-stone-500 mt-0.5" id="fbIssue">1 word to review</p>
+              </div>
+            </div>
+
+            <!-- One chip per flagged word (shown when there is more than one) -->
+            <div id="fbList" dir="rtl" class="hidden mt-4 flex flex-wrap gap-2"></div>
+
+            <div class="mt-4 rounded-xl bg-amber-50 border border-amber-100 p-4">
+              <p class="text-xs text-amber-700 font-medium" id="fbRule">Word</p>
+              <p dir="rtl" class="font-quran text-3xl text-red-700 text-right leading-loose" id="fbWord"></p>
+              <div id="fbPhoneticRow">
+                <p class="mt-2 text-xs text-amber-700 font-medium">Pronounced as</p>
+                <p class="text-lg font-semibold tracking-wide text-ink" id="fbPhonetic"></p>
+              </div>
+              <p class="mt-3 text-xs text-amber-700 font-medium">Likely cause</p>
+              <p class="mt-0.5 text-xs text-stone-600 leading-relaxed" id="fbNote"></p>
+            </div>
+
+            <!-- Articulation image placeholder -->
+            <figure class="mt-5">
+              <div class="aspect-[4/3] rounded-xl border-2 border-dashed border-stone-200 bg-stone-50 grid place-items-center text-center px-4">
+                <div>
+                  <svg class="w-10 h-10 mx-auto text-stone-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5L5 20"/></svg>
+                  <p class="mt-2 text-sm font-medium text-stone-500">Articulation Point Anatomy Image</p>
+                  <p class="text-xs text-stone-400" id="fbMakhraj"></p>
+                </div>
+              </div>
+            </figure>
+
+            <div class="mt-5 flex gap-2">
+              <button id="playCorrectBtn" type="button" class="flex-1 text-sm font-medium rounded-lg border border-stone-200 hover:bg-stone-50 px-3 py-2 transition">Hear correct</button>
+              <button id="resetBtn" type="button" class="flex-1 text-sm font-medium rounded-lg bg-stone-100 hover:bg-stone-200 px-3 py-2 transition">Clear</button>
+            </div>
+          </div>
+        </section>
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- ===== Application script: MODEL · SERVICES · VIEW · CONTROLLER ===== -->
+  <script>
+  function initFaseeh() {
+    'use strict';
+
+    // #####################################################################
+    // MODEL — configuration, static domain data and mutable state.
+    // Nothing in this section touches the DOM.
+    // #####################################################################
+    const CONFIG = {
+      ANALYZE_URL: 'http://127.0.0.1:8000/analyze',
+      REQUEST_TIMEOUT_MS: 30000,
+      // Pre-validation: takes shorter than this are rejected on the device, before upload.
+      MIN_RECORDING_SECONDS: 1.5,
+      // If the server can't be reached, show a simulated result (labelled "Demo")
+      // so the UI can still be demonstrated. Set to false once the backend is always on.
+      FALLBACK_TO_DEMO: true,
+    };
+
+    const REASON_TEXT = {
+      silent: 'No voice was detected in the recording.',
+      too_short: 'The recording was too short to analyze.',
+      duration_mismatch: 'The recording length doesn’t match this ayah. Did you recite the selected ayah?',
+      too_different: 'The recording is too different from the reference to judge (wrong ayah or heavy background noise).',
+    };
+
+    // Audio: everyayah.com pattern is SSSAAA.mp3 (3-digit surah + 3-digit ayah).
+    const AUDIO_BASES = [
+      'https://everyayah.com/data/Abdurrahmaan_As-Sudais_192kbps/',
+      'https://everyayah.com/data/Abdurrahmaan_As-Sudais_64kbps/', // fallback
+    ];
+    const pad3 = (n) => String(n).padStart(3, '0');
+    const audioUrls = (surah, ayah) => AUDIO_BASES.map((base) => `${base}${pad3(surah)}${pad3(ayah)}.mp3`);
+
+    // Tajweed notes (keyed by rule id, the same ids the server returns).
+    const RULES = {
+      hha:      { title: 'Ḥā’ (ح)',       makhraj: 'Makhraj: Wasaṭ al-Ḥalq (middle of the throat)',
+                  note: 'The ح (Ḥā’) was pronounced like ه (Hā’). Ḥā’ is a breathy sound from the middle of the throat; Hā’ comes from its deepest part.' },
+      ayn:      { title: 'ʿAyn (ع)',       makhraj: 'Makhraj: Wasaṭ al-Ḥalq (middle of the throat)',
+                  note: 'The ع (ʿAyn) was pronounced like ء (Hamzah). Tighten the middle of the throat to give ʿAyn its voiced, squeezed sound.' },
+      khaa:     { title: 'Khā’ (خ)',       makhraj: 'Makhraj: Adnā al-Ḥalq (top of the throat)',
+                  note: 'The خ (Khā’) was too light, close to ه (Hā’). Produce it with friction at the top of the throat, like a soft rasp.' },
+      ghayn:    { title: 'Ghayn (غ)',      makhraj: 'Makhraj: Adnā al-Ḥalq (top of the throat)',
+                  note: 'The غ (Ghayn) was pronounced like a hard “g”. Let air flow with a gargling friction at the top of the throat instead of closing it.' },
+      qaf:      { title: 'Qāf (ق)',        makhraj: 'Makhraj: Aqṣā al-Lisān (back of the tongue)',
+                  note: 'The ق (Qāf) was pronounced like ك (Kāf). Qāf comes from further back: the back of the tongue against the soft palate.' },
+      saad:     { title: 'Tafkhīm of Ṣād (ص)', makhraj: 'Makhraj: tip of the tongue near the lower front teeth',
+                  note: 'The ص (Ṣād) was pronounced like a light س (Sīn). Raise the back of the tongue so the sound is full and heavy.' },
+      qalqalah: { title: 'Qalqalah',       makhraj: 'Makhraj of د: tip of the tongue at the roots of the upper front teeth',
+                  note: 'The sākin د (Dāl) was cut off silently. It is a Qalqalah letter, so give it a slight echoing bounce without adding a vowel.' },
+      ghunnah:  { title: 'Ghunnah',        makhraj: 'Makhraj: al-Khayshūm (nasal cavity)',
+                  note: 'The نّ (Nūn with shaddah) was too short. Hold its nasal sound (ghunnah) for two counts.' },
+      madd:     { title: 'Madd Ṭabīʿī',    makhraj: 'Makhraj: al-Jawf (open space of the mouth and throat)',
+                  note: 'The long ā (shown by the small dagger alif) was shortened. Stretch it for two counts.' },
+      general:  { title: 'Pronunciation', makhraj: 'Compare this word with the reference recitation',
+                  note: 'This word sounded different from the reference. Listen to the reference again and match its letters, vowels and length.' },
+    };
+
+    // Text: standard Arabic with tashkeel (prototype). Words are space-separated.
+    // focus = the word the mock analysis flags; [..] in phonetic marks the corrected sound.
+    const SURAHS = {
+      112: {
+        number: 112, nameEn: 'Al-Ikhlas', nameAr: 'سورة الإخلاص', headerAr: 'سُورَةُ الإِخْلَاصِ',
+        meaning: 'The Sincerity', revelation: 'Makki',
+        ayat: [
+          { text: 'قُلْ هُوَ اللَّهُ أَحَدٌ',              meaning: 'Say, He is Allah, the One.',
+            focus: { word: 'أَحَدٌ', rule: 'hha', phonetic: 'A[ḥa]dun' } },
+          { text: 'اللَّهُ الصَّمَدُ',                     meaning: 'Allah, the Self-Sufficient on whom all depend.',
+            focus: { word: 'الصَّمَدُ', rule: 'saad', phonetic: 'Aṣ-[Ṣa]mad' } },
+          { text: 'لَمْ يَلِدْ وَلَمْ يُولَدْ',             meaning: 'He has not begotten, nor was He begotten.',
+            focus: { word: 'يَلِدْ', rule: 'qalqalah', phonetic: 'Yali[d]ᵊ' } },
+          { text: 'وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ',       meaning: 'And none is comparable to Him.',
+            focus: { word: 'أَحَدٌ', rule: 'hha', phonetic: 'A[ḥa]d' } },
+        ],
+      },
+      113: {
+        number: 113, nameEn: 'Al-Falaq', nameAr: 'سورة الفلق', headerAr: 'سُورَةُ الفَلَقِ',
+        meaning: 'The Daybreak', revelation: 'Makki',
+        ayat: [
+          { text: 'قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ',          meaning: 'Say, I seek refuge in the Lord of daybreak,',
+            focus: { word: 'الْفَلَقِ', rule: 'qaf', phonetic: 'Al-Fala[q]' } },
+          { text: 'مِن شَرِّ مَا خَلَقَ',                   meaning: 'from the evil of what He has created,',
+            focus: { word: 'خَلَقَ', rule: 'khaa', phonetic: '[Kha]laq' } },
+          { text: 'وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ',        meaning: 'and from the evil of darkness when it settles,',
+            focus: { word: 'غَاسِقٍ', rule: 'ghayn', phonetic: '[Ghā]siqin' } },
+          { text: 'وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ', meaning: 'and from the evil of those who blow on knots,',
+            focus: { word: 'الْعُقَدِ', rule: 'ayn', phonetic: 'Al-[ʿU]qad' } },
+          { text: 'وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ',        meaning: 'and from the evil of an envier when he envies.',
+            focus: { word: 'حَاسِدٍ', rule: 'hha', phonetic: '[Ḥā]sidin' } },
+        ],
+      },
+      114: {
+        number: 114, nameEn: 'An-Nas', nameAr: 'سورة الناس', headerAr: 'سُورَةُ النَّاسِ',
+        meaning: 'Mankind', revelation: 'Makki',
+        ayat: [
+          { text: 'قُلْ أَعُوذُ بِرَبِّ النَّاسِ',           meaning: 'Say, I seek refuge in the Lord of mankind,',
+            focus: { word: 'النَّاسِ', rule: 'ghunnah', phonetic: 'An-[Nnā]s' } },
+          { text: 'مَلِكِ النَّاسِ',                        meaning: 'the King of mankind,',
+            focus: { word: 'النَّاسِ', rule: 'ghunnah', phonetic: 'An-[Nnā]s' } },
+          { text: 'إِلَٰهِ النَّاسِ',                        meaning: 'the God of mankind,',
+            focus: { word: 'إِلَٰهِ', rule: 'madd', phonetic: 'I[lā]hi' } },
+          { text: 'مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ',       meaning: 'from the evil of the retreating whisperer,',
+            focus: { word: 'الْخَنَّاسِ', rule: 'khaa', phonetic: 'Al-[Kha]nnās' } },
+          { text: 'الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ',  meaning: 'who whispers into the hearts of mankind,',
+            focus: { word: 'صُدُورِ', rule: 'saad', phonetic: '[Ṣu]dūri' } },
+          { text: 'مِنَ الْجِنَّةِ وَالنَّاسِ',               meaning: 'from among the jinn and mankind.',
+            focus: { word: 'الْجِنَّةِ', rule: 'ghunnah', phonetic: 'Al-Ji[nn]ah' } },
+        ],
+      },
+    };
+    const SURAH_ORDER = [112, 113, 114];
+
+    // Mutable application state. Recorder lifecycle:
+    //   idle -> requesting -> recording -> stopping -> analyzing -> done
+    const Model = {
+      selection: { surah: 112, ayah: 1 },
+      recorder: {
+        state: 'idle', stream: null, mediaRecorder: null, chunks: [],
+        startedAt: 0, stoppedAt: 0, lastRecording: null,
+      },
+      analysis: {
+        token: 0,        // bumped on reset; stale responses are ignored
+        abort: null,     // AbortController of the in-flight request
+        errors: [],      // flagged words of the current result
+        demoAttempts: {},
+      },
+      reference: { sources: [], index: 0, failed: false, wantPlay: false },
+
+      surah() { return SURAHS[this.selection.surah]; },
+      ayah() { return this.surah().ayat[this.selection.ayah - 1]; },
+      words(surah, ayah) { return SURAHS[surah].ayat[ayah - 1].text.split(' '); },
+      nextSurahNumber() { return SURAH_ORDER[SURAH_ORDER.indexOf(this.selection.surah) + 1]; },
+      isLastAyah() { return this.selection.ayah === this.surah().ayat.length; },
+    };
+
+    // #####################################################################
+    // SERVICES — adapters to browser and network APIs, used by the Controller.
+    // #####################################################################
+    const $ = (id) => document.getElementById(id);
+    const toArabicDigits = (n) => String(n).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]);
+    const escapeHtml = (s) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const fmt = (sec) => {
+      if (!isFinite(sec) || sec < 0) return '0:00';
+      return `${Math.floor(sec / 60)}:${String(Math.floor(sec % 60)).padStart(2, '0')}`;
+    };
+    const makeError = (message, kind) => Object.assign(new Error(message), { kind });
+
+    // --- Live waveform: Web Audio API AnalyserNode -> bar heights, per animation frame ---
+    const LiveWaveform = (() => {
+      const BAR_COUNT = 24;            // even: the bars mirror around the centre
+      const VOICE_LOW_HZ = 80, VOICE_HIGH_HZ = 4000;
+      const bars = [];
+      let ctx = null, analyser = null, source = null, bins = null, raf = 0, timerCb = null;
+
+      function mount(container) {
+        for (let i = 0; i < BAR_COUNT; i++) {
+          const b = document.createElement('span');
+          b.className = 'wave-bar w-1 h-full rounded-full bg-current';
+          // Only used by the CSS fallback animation.
+          b.style.animationDelay = ((i % 7) * 0.13).toFixed(2) + 's';
+          bars.push(b);
+          container.appendChild(b);
+        }
+      }
+
+      function setFallback(on) { bars.forEach((b) => b.classList.toggle('is-fallback', on)); }
+
+      function start(stream, onFrame) {
+        stop();
+        timerCb = onFrame || null;
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) { setFallback(true); tick(); return; }
+        try {
+          ctx = new AC();
+          source = ctx.createMediaStreamSource(stream);
+          analyser = ctx.createAnalyser();
+          analyser.fftSize = 512;
+          analyser.smoothingTimeConstant = 0.7;
+          analyser.minDecibels = -90;
+          analyser.maxDecibels = -25;
+          source.connect(analyser);   // not connected to ctx.destination: no echo through speakers
+          bins = new Uint8Array(analyser.frequencyBinCount);
+          if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+          setFallback(false);
+        } catch (err) {
+          console.warn('Web Audio visualizer unavailable, using CSS fallback:', err);
+          teardownAudio();
+          setFallback(true);
+        }
+        tick();
+      }
+
+      function tick() {
+        if (analyser) {
+          analyser.getByteFrequencyData(bins);
+          const hzPerBin = ctx.sampleRate / analyser.fftSize;
+          const lo = Math.max(1, Math.floor(VOICE_LOW_HZ / hzPerBin));
+          const hi = Math.min(bins.length - 1, Math.ceil(VOICE_HIGH_HZ / hzPerBin));
+          const half = BAR_COUNT / 2;
+          for (let i = 0; i < half; i++) {
+            // Low frequencies in the centre, higher ones towards both edges.
+            const a = lo + Math.floor(((hi - lo) * i) / half);
+            const b = Math.max(a + 1, lo + Math.floor(((hi - lo) * (i + 1)) / half));
+            let sum = 0;
+            for (let k = a; k < b; k++) sum += bins[k];
+            const level = sum / (b - a) / 255;
+            const scale = Math.min(1, Math.max(0.12, Math.pow(level, 0.8) * 1.25)).toFixed(3);
+            bars[half - 1 - i].style.transform = `scaleY(${scale})`;
+            bars[half + i].style.transform = `scaleY(${scale})`;
+          }
+        }
+        if (timerCb) timerCb();
+        raf = requestAnimationFrame(tick);
+      }
+
+      function teardownAudio() {
+        try { source && source.disconnect(); } catch (_) {}
+        if (ctx && ctx.state !== 'closed') ctx.close().catch(() => {});
+        ctx = analyser = source = bins = null;
+      }
+
+      function stop() {
+        if (raf) cancelAnimationFrame(raf);
+        raf = 0;
+        timerCb = null;
+        teardownAudio();
+        setFallback(false);
+        bars.forEach((b) => { b.style.transform = ''; });
+      }
+
+      return { mount, start, stop };
+    })();
+
+    // --- Microphone ---
+    const Mic = {
+      pickMimeType() {
+        const candidates = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus'];
+        if (typeof MediaRecorder === 'undefined' || !MediaRecorder.isTypeSupported) return '';
+        return candidates.find((t) => MediaRecorder.isTypeSupported(t)) || '';
+      },
+      release() {
+        const rec = Model.recorder;
+        if (rec.stream) {
+          rec.stream.getTracks().forEach((track) => track.stop());
+          rec.stream = null;
+        }
+      },
+      errorMessage(err) {
+        const policy = document.permissionsPolicy || document.featurePolicy;
+        const blockedByFrame = window.self !== window.top &&
+          (policy?.allowsFeature ? !policy.allowsFeature('microphone') : true);
+        if (err.name === 'NotAllowedError' || err.name === 'SecurityError') {
+          return blockedByFrame
+            ? 'This preview can’t use the microphone. Open the file in its own browser tab.'
+            : 'Microphone access was blocked. Allow it from the icon in the address bar, then try again.';
+        }
+        if (err.name === 'NotFoundError') return 'No microphone was found on this device.';
+        if (err.name === 'NotReadableError') return 'The microphone is in use by another app. Close it and try again.';
+        return 'Could not access the microphone.';
+      },
+    };
+
+    // --- REST client for POST /analyze (Client–Server boundary) ---
+    // Result contract (same for the server and the demo fallback):
+    // { surah, ayah, status: 'ok' | 'errors' | 'unclear', score: 0-100 | null,
+    //   errors: [{ wordIndex, word, rule, confidence }], reason, message }
+    const ApiClient = {
+      async analyze(blob, { surah, ayah }) {
+        const formData = new FormData();
+        const ext = blob.type.includes('mp4') ? 'mp4' : blob.type.includes('ogg') ? 'ogg' : 'webm';
+        formData.append('file', blob, `recording.${ext}`);
+        formData.append('surah', String(surah));
+        formData.append('ayah', String(ayah));
+
+        const abort = new AbortController();
+        Model.analysis.abort = abort;
+        let timedOut = false;
+        const timer = setTimeout(() => { timedOut = true; abort.abort(); }, CONFIG.REQUEST_TIMEOUT_MS);
+        let res;
+        try {
+          res = await fetch(CONFIG.ANALYZE_URL, { method: 'POST', body: formData, signal: abort.signal });
+        } catch (e) {
+          if (e.name === 'AbortError') {
+            throw makeError(timedOut ? 'The analysis server took too long to respond.' : 'Analysis cancelled.',
+                            timedOut ? 'timeout' : 'cancelled');
+          }
+          throw makeError(`Could not reach ${CONFIG.ANALYZE_URL}`, 'network');
+        } finally {
+          clearTimeout(timer);
+        }
+
+        let body = null;
+        try { body = await res.json(); } catch (_) { /* non-JSON body */ }
+        if (!res.ok) throw makeError(body?.detail || `The analysis server returned an error (${res.status}).`, 'server');
+        return ApiClient.normalize(body, surah, ayah);
+      },
+
+      // Validate the server response so a malformed reply can't break the UI.
+      normalize(body, surah, ayah) {
+        const words = Model.words(surah, ayah);
+        if (!body || !['ok', 'errors', 'unclear'].includes(body.status)) {
+          throw makeError('The analysis server sent an unexpected response.', 'server');
+        }
+        const errors = (Array.isArray(body.errors) ? body.errors : [])
+          .filter((e) => Number.isInteger(e?.wordIndex) && e.wordIndex >= 0 && e.wordIndex < words.length)
+          .map((e) => ({
+            wordIndex: e.wordIndex,
+            word: words[e.wordIndex],
+            rule: RULES[e.rule] ? e.rule : 'general',
+            confidence: typeof e.confidence === 'number' ? e.confidence : null,
+          }));
+        const status = body.status === 'errors' && errors.length === 0 ? 'ok' : body.status;
+        return {
+          surah, ayah, status, errors,
+          score: typeof body.score === 'number' ? Math.round(body.score) : null,
+          reason: body.reason || null,
+          message: body.message || REASON_TEXT[body.reason] || null,
+        };
+      },
+    };
+
+    // --- Offline demo: alternates "word to review" and "well recited" per ayah ---
+    const DemoAnalyzer = {
+      async analyze({ surah, ayah }) {
+        await new Promise((r) => setTimeout(r, 2000));
+        const a = SURAHS[surah].ayat[ayah - 1];
+        const key = `${surah}:${ayah}`;
+        const attempts = Model.analysis.demoAttempts;
+        attempts[key] = (attempts[key] || 0) + 1;
+        if (attempts[key] % 2 === 0) {
+          return { surah, ayah, status: 'ok', score: 91, errors: [], reason: null, message: null };
+        }
+        const words = Model.words(surah, ayah);
+        const wordIndex = Math.max(0, words.indexOf(a.focus.word));
+        return {
+          surah, ayah, status: 'errors', score: 74, reason: null, message: null,
+          errors: [{ wordIndex, word: words[wordIndex], rule: a.focus.rule, confidence: 0.8 }],
+        };
+      },
+    };
+
+    // --- Reference recitation player (HTML5 Audio, per-ayah source with fallback) ---
+    const refAudio = new Audio();
+    refAudio.preload = 'metadata';
+
+    // #####################################################################
+    // VIEW — everything that writes to the DOM. Reads the Model, never changes it.
+    // #####################################################################
+    const el = {
+      surahTabs: $('surahTabs'), surahText: $('surahText'), ayahMeaning: $('ayahMeaning'),
+      recordBtn: $('recordBtn'), recordLabel: $('recordLabel'), recordIcon: $('recordIcon'),
+      recordHint: $('recordHint'), recordTimer: $('recordTimer'), statusPill: $('statusPill'),
+      waveform: $('waveform'),
+      feedbackDefault: $('feedbackDefault'), feedbackOk: $('feedbackOk'),
+      feedbackUnclear: $('feedbackUnclear'), feedbackError: $('feedbackError'),
+      fbSource: $('fbSource'), fbList: $('fbList'),
+      refBtn: $('refAudioBtn'), refIcon: $('refAudioIcon'), refLabel: $('refAudioLabel'),
+      refProgress: $('refProgress'), refTime: $('refTime'), refDuration: $('refDuration'),
+    };
+    const FEEDBACK_PANELS = [el.feedbackDefault, el.feedbackOk, el.feedbackUnclear, el.feedbackError];
+
+    const ICONS = {
+      mic:  '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>',
+      stop: '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>',
+      spin: '<svg class="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity=".25" stroke-width="3"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>',
+      play: '<svg class="w-4 h-4 ml-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
+      pause:'<svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>',
+    };
+
+    const BTN_BASE = 'group inline-flex items-center gap-3 rounded-full text-white pl-5 pr-7 py-4 text-base font-semibold shadow-lift transition-all focus:outline-none focus-visible:ring-4 disabled:cursor-wait';
+    const BTN_THEME = {
+      green: 'bg-brand-700 hover:bg-brand-800 focus-visible:ring-brand-200',
+      red:   'bg-red-600 hover:bg-red-700 focus-visible:ring-red-200 is-recording',
+      gray:  'bg-stone-500 focus-visible:ring-stone-200',
+    };
+    const SOURCE_BADGE = {
+      server: { text: 'Live analysis', cls: 'bg-brand-50 text-brand-700', title: 'Result from the Faseeh analysis server.' },
+      demo:   { text: 'Demo · server offline', cls: 'bg-amber-50 text-amber-700', title: `Simulated result: ${CONFIG.ANALYZE_URL} could not be reached.` },
+      device: { text: 'Checked on device', cls: 'bg-stone-100 text-stone-600', title: 'Rejected before upload; nothing was sent to the server.' },
+    };
+
+    const replay = (node) => { node.classList.remove('reveal'); void node.offsetWidth; node.classList.add('reveal'); };
+
+    const View = {
+      // --- reading area ---
+      renderTabs() {
+        el.surahTabs.innerHTML = SURAH_ORDER.map((num) => {
+          const s = SURAHS[num];
+          const active = num === Model.selection.surah;
+          return `
+            <button type="button" role="tab" aria-selected="${active}" data-surah="${num}"
+              class="flex-1 min-w-[7.5rem] rounded-xl px-3 py-2 text-left sm:text-center transition
+                     ${active ? 'bg-white shadow-soft text-ink' : 'text-stone-500 hover:text-ink hover:bg-white/60'}">
+              <span class="block text-[11px] ${active ? 'text-brand-700' : 'text-stone-400'}">Surah ${num}</span>
+              <span class="block text-sm font-semibold whitespace-nowrap">${s.nameEn}
+                <span class="font-tajawal font-medium ${active ? 'text-brand-700' : 'text-stone-400'}">${s.nameAr.replace('سورة ', '')}</span>
+              </span>
+            </button>`;
+        }).join('');
+      },
+
+      renderSurah() {
+        const s = Model.surah();
+        $('headerMeta').textContent = `Surah ${s.number} · ${s.ayat.length} Ayat`;
+        $('headerName').textContent = s.headerAr;
+        el.surahText.innerHTML = s.ayat.map((a, i) => {
+          const n = i + 1;
+          const words = a.text.split(' ')
+            .map((w, wi) => `<span class="quran-word" data-word="${wi}">${escapeHtml(w)}</span>`)
+            .join(' ');
+          return `<span class="ayah" data-ayah="${n}" role="button" tabindex="0" aria-label="Ayah ${n}">${words}&nbsp;<span class="ayah-num">﴿${toArabicDigits(n)}﴾</span></span>`;
+        }).join(' ');
+        replay(el.surahText);
+      },
+
+      renderSelection() {
+        const s = Model.surah(), a = Model.ayah(), n = Model.selection.ayah;
+        el.surahText.querySelectorAll('.ayah').forEach((node) => {
+          const on = Number(node.dataset.ayah) === n;
+          node.classList.toggle('is-selected', on);
+          node.setAttribute('aria-pressed', on);
+        });
+        $('citeSurahEn').textContent = `Surah ${s.nameEn}`;
+        $('citeSurahAr').textContent = s.nameAr;
+        $('citeMeaning').textContent = s.meaning;
+        $('citeAyah').textContent = n;
+        $('citeAyahTotal').textContent = `of ${s.ayat.length}`;
+        $('citeSurahNum').textContent = s.number;
+        $('citeRevelation').textContent = s.revelation;
+        replay($('citationBody'));
+        el.ayahMeaning.textContent = `Ayah ${n}: “${a.meaning}”`;
+        el.refLabel.textContent = `${s.nameEn} · Ayah ${n}`;
+      },
+
+      // --- recorder chrome ---
+      setButton({ label, icon, theme, disabled = false }) {
+        el.recordBtn.className = BTN_BASE + ' ' + BTN_THEME[theme];
+        el.recordLabel.textContent = label;
+        el.recordIcon.innerHTML = ICONS[icon];
+        el.recordBtn.disabled = disabled;
+      },
+      setStatus(text, cls) {
+        el.statusPill.textContent = text;
+        el.statusPill.className = 'shrink-0 text-xs font-medium rounded-full px-3 py-1 ' + cls;
+      },
+      setHint(text) { el.recordHint.textContent = text; },
+      showWaveform(show) {
+        el.waveform.classList.toggle('hidden', !show);
+        el.waveform.classList.toggle('flex', show);
+        el.recordTimer.classList.toggle('hidden', !show);
+        if (show) el.recordTimer.textContent = '0.0 s';
+      },
+      renderTimer(seconds) {
+        const ok = seconds >= CONFIG.MIN_RECORDING_SECONDS;
+        el.recordTimer.textContent = `${seconds.toFixed(1)} s`;
+        el.recordTimer.classList.toggle('text-red-500', !ok);
+        el.recordTimer.classList.toggle('text-stone-400', ok);
+      },
+      showIdle() {
+        View.showWaveform(false);
+        View.setButton({ label: 'Record', icon: 'mic', theme: 'green' });
+        View.setStatus('Ready', 'bg-stone-100 text-stone-500');
+        View.setHint('Tap to start, then recite the highlighted ayah clearly.');
+      },
+      showRequestingMic() {
+        View.setButton({ label: 'Allow microphone…', icon: 'mic', theme: 'gray', disabled: true });
+        View.setStatus('Waiting for permission', 'bg-stone-100 text-stone-500');
+        View.setHint('Please allow microphone access in your browser.');
+      },
+      showRecording() {
+        View.setButton({ label: 'Stop Recording', icon: 'stop', theme: 'red' });
+        View.setStatus('● Recording', 'bg-red-50 text-red-600');
+        View.setHint(`Listening… recite Ayah ${Model.selection.ayah}, then tap stop.`);
+        View.showWaveform(true);
+      },
+      showStopping() {
+        View.showWaveform(false);
+        View.setButton({ label: 'Finishing…', icon: 'spin', theme: 'gray', disabled: true });
+      },
+      showAnalyzing(blob) {
+        View.setButton({ label: 'Analyzing audio...', icon: 'spin', theme: 'gray', disabled: true });
+        View.setStatus('Analyzing', 'bg-amber-50 text-amber-700');
+        View.setHint(`Comparing your recitation against the reference (${(blob.size / 1024).toFixed(0)} KB).`);
+      },
+      showMicError(message) {
+        View.showWaveform(false);
+        View.setButton({ label: 'Record', icon: 'mic', theme: 'green' });
+        View.setStatus('Mic unavailable', 'bg-red-50 text-red-600');
+        View.setHint(message);
+      },
+
+      // --- feedback panel ---
+      showPanel(panel) {
+        FEEDBACK_PANELS.forEach((p) => p.classList.toggle('hidden', p !== panel));
+        if (panel !== el.feedbackDefault) replay(panel);
+      },
+      setSource(source) {
+        const badge = SOURCE_BADGE[source];
+        if (!badge) { el.fbSource.classList.add('hidden'); return; }
+        el.fbSource.textContent = badge.text;
+        el.fbSource.title = badge.title;
+        el.fbSource.className = 'text-[11px] font-medium rounded-full px-2 py-0.5 ' + badge.cls;
+      },
+      clearFeedback() {
+        el.surahText.querySelectorAll('.word-error').forEach((n) => n.classList.remove('word-error', 'is-active'));
+        View.setSource(null);
+        View.showPanel(el.feedbackDefault);
+      },
+      showOk(result, source) {
+        View.setSource(source);
+        $('okScore').textContent = result.score ?? '–';
+        const next = Model.nextSurahNumber();
+        $('nextAyahBtn').textContent = !Model.isLastAyah() ? 'Next ayah'
+          : next ? `Start ${SURAHS[next].nameEn}` : 'Back to Ayah 1';
+        View.showPanel(el.feedbackOk);
+        View.setButton({ label: 'Record Again', icon: 'mic', theme: 'green' });
+        View.setStatus('Well recited', 'bg-brand-50 text-brand-700');
+        View.setHint('Great. Move on to the next ayah, or record again to practise.');
+      },
+      showUnclear({ title, message, source = null, status = ['Try again', 'bg-amber-50 text-amber-700'], hint }) {
+        View.setSource(source);
+        $('unclearTitle').textContent = title;
+        $('unclearMsg').textContent = message;
+        View.showPanel(el.feedbackUnclear);
+        View.setButton({ label: 'Record Again', icon: 'mic', theme: 'green' });
+        View.setStatus(...status);
+        View.setHint(hint || 'Tap Record Again when you’re ready.');
+      },
+      showErrors(result, source) {
+        View.setSource(source);
+        const errors = Model.analysis.errors;
+        const ayahEl = el.surahText.querySelector(`.ayah[data-ayah="${Model.selection.ayah}"]`);
+        errors.forEach((e) => ayahEl?.querySelector(`.quran-word[data-word="${e.wordIndex}"]`)?.classList.add('word-error'));
+        const n = errors.length;
+        $('fbIssue').textContent = `${n} word${n > 1 ? 's' : ''} to review` + (result.score != null ? ` · similarity ${result.score}/100` : '');
+        el.fbList.classList.toggle('hidden', n < 2);
+        el.fbList.innerHTML = errors.map((e, i) =>
+          `<button type="button" data-err="${i}" class="font-quran text-xl rounded-lg border px-3 py-1 transition">${escapeHtml(e.word)}</button>`).join('');
+        View.showErrorDetail(0);
+        View.showPanel(el.feedbackError);
+        View.setButton({ label: 'Record Again', icon: 'mic', theme: 'green' });
+        View.setStatus(`${n} issue${n > 1 ? 's' : ''} found`, 'bg-red-50 text-red-600');
+        View.setHint(`Review the highlighted word${n > 1 ? 's' : ''}, then try again.`);
+      },
+      showErrorDetail(i) {
+        const e = Model.analysis.errors[i];
+        if (!e) return;
+        const a = Model.ayah();
+        const rule = RULES[e.rule] || RULES.general;
+        $('fbRule').textContent = `Word ${e.wordIndex + 1} · ${rule.title}`;
+        $('fbWord').textContent = e.word;
+        // Phonetic spelling is only known for the ayah's prepared focus word (for now).
+        const phonetic = a.focus && a.focus.word === e.word ? a.focus.phonetic : null;
+        $('fbPhoneticRow').classList.toggle('hidden', !phonetic);
+        if (phonetic) $('fbPhonetic').innerHTML = escapeHtml(phonetic).replace(/\[(.+?)\]/g, '<span class="ph-hit">$1</span>');
+        $('fbNote').textContent = rule.note;
+        $('fbMakhraj').textContent = rule.makhraj;
+        el.fbList.querySelectorAll('[data-err]').forEach((b) => {
+          const on = Number(b.dataset.err) === i;
+          b.className = 'font-quran text-xl rounded-lg border px-3 py-1 transition ' +
+            (on ? 'border-red-300 bg-red-50 text-red-700' : 'border-stone-200 text-stone-600 hover:bg-stone-50');
+        });
+        const ayahEl = el.surahText.querySelector(`.ayah[data-ayah="${Model.selection.ayah}"]`);
+        ayahEl?.querySelectorAll('.word-error').forEach((w) =>
+          w.classList.toggle('is-active', Number(w.dataset.word) === e.wordIndex));
+      },
+
+      // --- reference player ---
+      renderRef(audio) {
+        const { currentTime, duration, paused } = audio;
+        el.refProgress.style.width = (duration ? (currentTime / duration) * 100 : 0) + '%';
+        el.refTime.textContent = fmt(currentTime);
+        el.refIcon.innerHTML = paused ? ICONS.play : ICONS.pause;
+      },
+      renderRefDuration(seconds) { el.refDuration.textContent = fmt(seconds); },
+      setRefMessage(text) {
+        el.refTime.textContent = text;
+        el.refIcon.innerHTML = ICONS.play;
+        el.refProgress.style.width = '0%';
+      },
+    };
+
+    // #####################################################################
+    // CONTROLLER — handles user and system events, updates the Model,
+    // calls Services and asks the View to re-render.
+    // #####################################################################
+
+    // --- selection ---
+    function selectSurah(num) {
+      if (!SURAHS[num] || num === Model.selection.surah) return;
+      resetAll();
+      Model.selection.surah = num;
+      Model.selection.ayah = 1;
+      View.renderTabs();
+      View.renderSurah();
+      applySelection();
+    }
+
+    function selectAyah(n) {
+      if (n === Model.selection.ayah) return;
+      resetAll(); // cancel any recording/analysis tied to the previous ayah
+      Model.selection.ayah = n;
+      applySelection();
+    }
+
+    function applySelection() {
+      View.renderSelection();
+      loadReference(Model.selection.surah, Model.selection.ayah);
+      try { history.replaceState(null, '', `#${Model.selection.surah}:${Model.selection.ayah}`); } catch (_) {}
+    }
+
+    function goToNextAyah() {
+      if (!Model.isLastAyah()) { selectAyah(Model.selection.ayah + 1); return; }
+      const next = Model.nextSurahNumber();
+      if (next) selectSurah(next);
+      else selectAyah(1);
+    }
+
+    // --- reference audio ---
+    function loadReference(surah, ayah) {
+      const r = Model.reference;
+      r.wantPlay = false;
+      refAudio.pause();
+      r.sources = audioUrls(surah, ayah);
+      r.index = 0;
+      r.failed = false;
+      refAudio.src = r.sources[0];
+      refAudio.load();
+      View.renderRefDuration(0);
+      View.renderRef(refAudio);
+    }
+
+    function onReferenceError() {
+      const r = Model.reference;
+      if (!refAudio.getAttribute('src')) return;
+      if (r.index < r.sources.length - 1) {
+        r.index++;
+        console.warn('Reference audio failed, trying fallback:', r.sources[r.index]);
+        refAudio.src = r.sources[r.index];
+        refAudio.load();
+        if (r.wantPlay) refAudio.play().catch(() => {});
+        return;
+      }
+      r.failed = true;
+      r.wantPlay = false;
+      View.setRefMessage('Audio unavailable – tap to retry');
+    }
+
+    async function playReference({ restart = false } = {}) {
+      const r = Model.reference;
+      if (r.failed) {
+        r.failed = false;
+        r.index = 0;
+        refAudio.src = r.sources[0];
+        refAudio.load();
+      }
+      r.wantPlay = true;
+      if (restart && isFinite(refAudio.duration)) refAudio.currentTime = 0;
+      try {
+        await refAudio.play();
+      } catch (err) {
+        if (err.name === 'NotSupportedError' || err.name === 'AbortError') return; // handled by 'error'
+        r.wantPlay = false;
+        console.error('Reference audio failed to play:', err);
+        View.setRefMessage(err.name === 'NotAllowedError' ? 'Tap again to play' : 'Playback failed');
+      }
+    }
+
+    function pauseReference() {
+      Model.reference.wantPlay = false;
+      refAudio.pause();
+    }
+
+    // --- recording ---
+    async function startRecording() {
+      if (!window.isSecureContext) {
+        failMic('Microphone needs a secure page. Open this via http://localhost or https://.');
+        return;
+      }
+      if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
+        failMic('Recording is not supported in this browser.');
+        return;
+      }
+
+      const rec = Model.recorder;
+      rec.state = 'requesting';
+      Model.analysis.errors = [];
+      View.clearFeedback();
+      if (!refAudio.paused) pauseReference();
+      View.showRequestingMic();
+
+      try {
+        rec.stream = await navigator.mediaDevices.getUserMedia({
+          audio: { echoCancellation: true, noiseSuppression: true },
+        });
+      } catch (err) {
+        console.error('getUserMedia failed:', err);
+        failMic(Mic.errorMessage(err));
+        return;
+      }
+
+      // The user may have switched ayah while the permission prompt was open.
+      if (rec.state !== 'requesting') { Mic.release(); return; }
+
+      rec.chunks = [];
+      const mimeType = Mic.pickMimeType();
+      const recorder = new MediaRecorder(rec.stream, mimeType ? { mimeType } : undefined);
+      rec.mediaRecorder = recorder;
+      recorder.addEventListener('dataavailable', (e) => {
+        if (e.data && e.data.size > 0) rec.chunks.push(e.data);
+      });
+      recorder.addEventListener('stop', () => onRecordingStopped(recorder));
+      recorder.start(250);
+      rec.startedAt = performance.now();
+      rec.state = 'recording';
+
+      View.showRecording();
+      LiveWaveform.start(rec.stream, () => View.renderTimer((performance.now() - rec.startedAt) / 1000));
+    }
+
+    function stopRecording() {
+      const rec = Model.recorder;
+      if (rec.mediaRecorder && rec.mediaRecorder.state !== 'inactive') {
+        rec.state = 'stopping';
+        rec.stoppedAt = performance.now();
+        LiveWaveform.stop();
+        View.showStopping();
+        rec.mediaRecorder.stop(); // -> 'stop' event -> onRecordingStopped()
+      }
+    }
+
+    function onRecordingStopped(recorder) {
+      const rec = Model.recorder;
+      const blob = new Blob(rec.chunks, { type: recorder.mimeType || 'audio/webm' });
+      rec.chunks = [];
+      LiveWaveform.stop();
+      Mic.release();
+      if (rec.state !== 'stopping') return; // cancelled via resetAll()
+      if (blob.size === 0) {
+        failMic('No audio was captured. Check your microphone and try again.');
+        return;
+      }
+
+      // Pre-validation: reject very short takes on the device, before any upload.
+      const durationSec = (rec.stoppedAt - rec.startedAt) / 1000;
+      if (durationSec < CONFIG.MIN_RECORDING_SECONDS) {
+        rec.state = 'done';
+        View.showUnclear({
+          title: 'Recording too short',
+          message: `That take was ${durationSec.toFixed(1)} s. Recite the whole ayah (at least ` +
+                   `${CONFIG.MIN_RECORDING_SECONDS} s) before tapping stop. Nothing was uploaded.`,
+          source: 'device',
+          status: ['Too short', 'bg-amber-50 text-amber-700'],
+        });
+        return;
+      }
+
+      rec.lastRecording = blob;
+      analyzeAudio(blob);
+    }
+
+    function failMic(message) {
+      LiveWaveform.stop();
+      Mic.release();
+      Model.recorder.state = 'idle';
+      View.showMicError(message);
+    }
+
+    // --- analysis ---
+    async function analyzeAudio(blob) {
+      Model.recorder.state = 'analyzing';
+      View.showAnalyzing(blob);
+
+      const token = ++Model.analysis.token;
+      const target = { surah: Model.selection.surah, ayah: Model.selection.ayah };
+      let result, source = 'server';
+      try {
+        result = await ApiClient.analyze(blob, target);
+      } catch (err) {
+        if (token !== Model.analysis.token) return; // reset / ayah changed meanwhile
+        if (err.kind === 'network' && CONFIG.FALLBACK_TO_DEMO) {
+          console.warn('Analysis server unreachable, showing a demo result:', err.message);
+          result = await DemoAnalyzer.analyze(target);
+          source = 'demo';
+        } else {
+          console.error('Analysis failed:', err);
+          Model.recorder.state = 'done';
+          View.showUnclear({ title: 'Analysis failed', message: err.message,
+                             status: ['Analysis failed', 'bg-red-50 text-red-600'],
+                             hint: 'Please try again in a moment.' });
+          return;
+        }
+      } finally {
+        if (token === Model.analysis.token) Model.analysis.abort = null;
+      }
+      if (token !== Model.analysis.token) return;
+      showResult(result, source);
+    }
+
+    function showResult(result, source) {
+      Model.recorder.state = 'done';
+      if (result.status === 'ok') { View.showOk(result, source); return; }
+      if (result.status === 'unclear') {
+        View.showUnclear({ title: 'Couldn’t analyze this recording',
+                           message: result.message || 'Please try recording again.', source });
+        return;
+      }
+      Model.analysis.errors = result.errors;
+      View.showErrors(result, source);
+    }
+
+    function resetAll() {
+      const a = Model.analysis, rec = Model.recorder;
+      a.token++;                                     // ignore any in-flight result
+      if (a.abort) { a.abort.abort(); a.abort = null; }
+      rec.state = 'idle';                            // set first so a pending 'stop' event is discarded
+      if (rec.mediaRecorder && rec.mediaRecorder.state !== 'inactive') rec.mediaRecorder.stop();
+      LiveWaveform.stop();
+      Mic.release();
+      a.errors = [];
+      View.clearFeedback();
+      View.showIdle();
+    }
+
+    // --- event wiring ---
+    function wireEvents() {
+      el.surahTabs.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-surah]');
+        if (btn) selectSurah(Number(btn.dataset.surah));
+      });
+      el.surahText.addEventListener('click', (e) => {
+        const node = e.target.closest('.ayah');
+        if (node) selectAyah(Number(node.dataset.ayah));
+      });
+      el.surahText.addEventListener('keydown', (e) => {
+        const node = e.target.closest('.ayah');
+        if (node && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); selectAyah(Number(node.dataset.ayah)); }
+      });
+
+      el.recordBtn.addEventListener('click', () => {
+        const state = Model.recorder.state;
+        if (state === 'idle' || state === 'done') startRecording();
+        else if (state === 'recording') stopRecording();
+      });
+      $('resetBtn').addEventListener('click', resetAll);
+      $('nextAyahBtn').addEventListener('click', goToNextAyah);
+      el.fbList.addEventListener('click', (e) => {
+        const b = e.target.closest('[data-err]');
+        if (b) View.showErrorDetail(Number(b.dataset.err));
+      });
+
+      el.refBtn.addEventListener('click', () => (refAudio.paused ? playReference() : pauseReference()));
+      $('playCorrectBtn').addEventListener('click', () => playReference({ restart: true }));
+      $('okHearBtn').addEventListener('click', () => playReference({ restart: true }));
+      refAudio.addEventListener('loadedmetadata', () => View.renderRefDuration(refAudio.duration));
+      ['timeupdate', 'play', 'pause'].forEach((evt) => refAudio.addEventListener(evt, () => View.renderRef(refAudio)));
+      refAudio.addEventListener('ended', () => {
+        Model.reference.wantPlay = false;
+        refAudio.currentTime = 0;
+        View.renderRef(refAudio);
+      });
+      refAudio.addEventListener('error', onReferenceError);
+
+      window.addEventListener('beforeunload', () => { LiveWaveform.stop(); Mic.release(); });
+    }
+
+    // --- bootstrap ---
+    LiveWaveform.mount(el.waveform);
+    wireEvents();
+
+    // Restore selection from the URL, e.g. faseeh-reader.html#113:4
+    const m = location.hash.match(/^#(\d{3}):(\d+)$/);
+    if (m && SURAHS[m[1]]) {
+      Model.selection.surah = Number(m[1]);
+      Model.selection.ayah = Math.min(Math.max(1, Number(m[2])), SURAHS[m[1]].ayat.length);
+    }
+
+    resetAll();
+    View.renderTabs();
+    View.renderSurah();
+    applySelection();
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initFaseeh);
+  else initFaseeh();
+  </script>
+</body>
+</html>
