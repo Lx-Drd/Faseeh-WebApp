@@ -29,3 +29,9 @@ models/
 # Logs
 *.jsonl
 *.log
+
+# Root-level reference folders used by reference.py, local samples and the venv
+reference_audio/
+reference_cache/
+data/samples/
+.venv/

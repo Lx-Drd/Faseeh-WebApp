@@ -1,0 +1,40 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Reference audio and feature caches (reference.py uses the two root folders)
+reference_audio/
+reference_cache/
+data/reference_audio/
+data/reference_cache/
+*.npy
+
+# Samples, participant data, evaluation caches and reports
+data/samples/
+data/collected/
+data/eval/
+reports/
+
+# Model weights and caches
+models/
+.cache/
+*.bin
+*.safetensors
+*.pt
+*.onnx
+
+# Audio files anywhere
+*.wav
+*.webm
+*.mp3
+*.mp4
+*.m4a
+*.ogg
+*.flac
+*.part
+
+# Logs
+*.jsonl
+*.log

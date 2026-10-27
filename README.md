@@ -67,6 +67,12 @@ Request problems return `{"detail": "..."}`:
 | `rules.py` | Tajweed rule details + `guess_rule(word)` |
 | `reference.py` | Finds the reference: `reference_audio/` → `reference_cache/` → download from everyayah.com |
 
+## Baseline measurement (dev)
+
+`scripts/baseline.py` measures per-filter latency in `dtw` mode; results and how to rerun them
+are in `docs/baseline.md`. Dev setup: `pip install -r requirements-dev.txt` (pytest), tests with
+`python -m pytest`. Design decisions are recorded in `docs/adr/`.
+
 ## Next step: calibrate the DTW
 
 The thresholds in `AnalysisConfig` (`analysis.py`) were set on synthetic audio. The server
