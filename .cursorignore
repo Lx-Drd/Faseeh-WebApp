@@ -1,0 +1,31 @@
+# Keep participant data, caches and model weights out of the agent's context.
+
+# Collected recordings, labels and evaluation caches
+data/collected/
+data/eval/
+
+# Reference audio and feature caches
+data/reference_audio/
+data/reference_cache/
+*.npy
+
+# Model weights and caches
+models/
+.cache/
+*.bin
+*.safetensors
+*.pt
+*.onnx
+
+# Audio files anywhere
+*.wav
+*.webm
+*.mp3
+*.mp4
+*.m4a
+*.ogg
+*.flac
+
+# Logs
+*.jsonl
+*.log
