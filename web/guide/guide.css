@@ -1,0 +1,23 @@
+dialog.fas-guide {
+  color: #183a33; background: #fffefa; border: 1px solid #d3ddd7; border-radius: 16px;
+  width: min(40rem, calc(100% - 2rem)); max-width: calc(100% - 1rem);
+  max-height: calc(100dvh - 2rem); padding: clamp(16px, 3vw, 24px);
+  box-sizing: border-box; box-shadow: 0 18px 60px #112d2336; overflow: auto;
+  margin: auto; font: inherit;
+}
+.fas-guide::backdrop { background: rgb(14 34 29 / 47%); }
+.fas-guide header, .fas-guide .guide-actions { display: flex; gap: 12px; align-items: center; }
+.fas-guide header { justify-content: space-between; position: static; background: none; }
+.fas-guide h2 { margin: 0; color: inherit; font-size: clamp(1.05rem, 3.5vw, 1.4rem); }
+.fas-guide button { padding: 8px 16px; border-radius: 8px; border: 1px solid #a6b5ab; background: white; color: inherit; font: inherit; cursor: pointer; }
+.fas-guide button:disabled { opacity: .5; cursor: default; }
+.fas-guide button.guide-primary { color: white; background: #184b3e; border-color: #184b3e; }
+.fas-guide button.guide-close { background: transparent; border: none; font-size: 1.6rem; min-width: 40px; }
+.fas-guide video { width: 100%; height: auto; display: block; border-radius: 10px; background: #143c32; }
+.fas-guide .guide-content { margin-block: 12px 18px; }
+.fas-guide .guide-actions { justify-content: flex-end; flex-wrap: wrap; }
+.fas-guide .guide-progress { color: #526d60; font-size: .8rem; }
+.fas-guide .guide-instruction { margin: 6px 0 0; line-height: 1.45; }
+dialog.fas-guide.guide-tour { position: fixed; inset: auto 0 max(8px, env(safe-area-inset-bottom)); margin: 0 auto; width: min(34rem, calc(100% - 1.25rem)); max-height: 55dvh; }
+.guide-tour::backdrop { background: rgb(14 30 23 / 9%); }
+.faseeh-tour-target { outline: 3px solid #c08d3a; outline-offset: 3px; }

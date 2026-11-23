@@ -1,0 +1,189 @@
+<svg xmlns="http://www.w3.org/2000/svg"><defs>
+<symbol id="cavity" viewBox="32 15 186 126">
+ <g fill="none" stroke="#758b80" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M47 135 Q49 113 45 91 Q37 65 50 48 Q62 27 98 23 Q141 16 167 25 L177 36 Q182 42 189 46 Q204 51 199 58 Q195 61 187 60" fill="#eee9da"/>
+ <path d="M47 135 Q52 101 52 82 Q51 67 65 57 Q77 51 81 53 Q83 66 87 62 Q88 58 86 52 Q100 38 126 37 Q154 33 177 47"/>
+ <path d="M175 46 L185 48 L184 59 L178 59 Z M176 77 L182 68 L186 69 L184 80 Z" fill="#fffdf6"/>
+ <path d="M188 70 Q200 69 200 73 Q196 79 181 81 Q149 108 96 109 Q74 111 70 135" fill="#eee9da"/>
+ <path d="M64 132 Q67 110 68 96 C75 81 100 65 125 68 Q151 74 173 72 Q171 84 155 90 Q124 100 99 99 Q80 103 73 131" fill="#e2b8a6" stroke="#aa8072"/>
+ </g>
+ <circle cx="131" cy="67" r="9" fill="#579b78" fill-opacity=".22" stroke="#297358" stroke-width="1"/>
+ <circle cx="131" cy="67" r="3" fill="#195f46"/>
+ </symbol>
+<symbol id="deepThroat" viewBox="32 15 186 126">
+ <g fill="none" stroke="#758b80" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M47 135 Q49 113 45 91 Q37 65 50 48 Q62 27 98 23 Q141 16 167 25 L177 36 Q182 42 189 46 Q204 51 199 58 Q195 61 187 60" fill="#eee9da"/>
+ <path d="M47 135 Q52 101 52 82 Q51 67 65 57 Q77 51 81 53 Q83 66 87 62 Q88 58 86 52 Q100 38 126 37 Q154 33 177 47"/>
+ <path d="M175 46 L185 48 L184 59 L178 59 Z M176 77 L182 68 L186 69 L184 80 Z" fill="#fffdf6"/>
+ <path d="M188 70 Q200 69 200 73 Q196 79 181 81 Q149 108 96 109 Q74 111 70 135" fill="#eee9da"/>
+ <path d="M64 132 Q67 110 68 96 C75 81 100 65 125 68 Q151 74 173 72 Q171 84 155 90 Q124 100 99 99 Q80 103 73 131" fill="#e2b8a6" stroke="#aa8072"/>
+ </g>
+ <circle cx="61" cy="122" r="9" fill="#579b78" fill-opacity=".22" stroke="#297358" stroke-width="1"/>
+ <circle cx="61" cy="122" r="3" fill="#195f46"/>
+ </symbol>
+<symbol id="midThroat" viewBox="32 15 186 126">
+ <g fill="none" stroke="#758b80" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M47 135 Q49 113 45 91 Q37 65 50 48 Q62 27 98 23 Q141 16 167 25 L177 36 Q182 42 189 46 Q204 51 199 58 Q195 61 187 60" fill="#eee9da"/>
+ <path d="M47 135 Q52 101 52 82 Q51 67 65 57 Q77 51 81 53 Q83 66 87 62 Q88 58 86 52 Q100 38 126 37 Q154 33 177 47"/>
+ <path d="M175 46 L185 48 L184 59 L178 59 Z M176 77 L182 68 L186 69 L184 80 Z" fill="#fffdf6"/>
+ <path d="M188 70 Q200 69 200 73 Q196 79 181 81 Q149 108 96 109 Q74 111 70 135" fill="#eee9da"/>
+ <path d="M64 132 Q67 110 68 96 C75 81 100 65 125 68 Q151 74 173 72 Q171 84 155 90 Q124 100 99 99 Q80 103 73 131" fill="#e2b8a6" stroke="#aa8072"/>
+ </g>
+ <circle cx="65" cy="103" r="9" fill="#579b78" fill-opacity=".22" stroke="#297358" stroke-width="1"/>
+ <circle cx="65" cy="103" r="3" fill="#195f46"/>
+ </symbol>
+<symbol id="upperThroat" viewBox="32 15 186 126">
+ <g fill="none" stroke="#758b80" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M47 135 Q49 113 45 91 Q37 65 50 48 Q62 27 98 23 Q141 16 167 25 L177 36 Q182 42 189 46 Q204 51 199 58 Q195 61 187 60" fill="#eee9da"/>
+ <path d="M47 135 Q52 101 52 82 Q51 67 65 57 Q77 51 81 53 Q83 66 87 62 Q88 58 86 52 Q100 38 126 37 Q154 33 177 47"/>
+ <path d="M175 46 L185 48 L184 59 L178 59 Z M176 77 L182 68 L186 69 L184 80 Z" fill="#fffdf6"/>
+ <path d="M188 70 Q200 69 200 73 Q196 79 181 81 Q149 108 96 109 Q74 111 70 135" fill="#eee9da"/>
+ <path d="M64 132 Q67 110 68 96 C75 81 100 65 125 68 Q151 74 173 72 Q171 84 155 90 Q124 100 99 99 Q80 103 73 131" fill="#e2b8a6" stroke="#aa8072"/>
+ </g>
+ <circle cx="72" cy="81" r="9" fill="#579b78" fill-opacity=".22" stroke="#297358" stroke-width="1"/>
+ <circle cx="72" cy="81" r="3" fill="#195f46"/>
+ </symbol>
+<symbol id="qaf" viewBox="32 15 186 126">
+ <g fill="none" stroke="#758b80" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M47 135 Q49 113 45 91 Q37 65 50 48 Q62 27 98 23 Q141 16 167 25 L177 36 Q182 42 189 46 Q204 51 199 58 Q195 61 187 60" fill="#eee9da"/>
+ <path d="M47 135 Q52 101 52 82 Q51 67 65 57 Q77 51 81 53 Q83 66 87 62 Q88 58 86 52 Q100 38 126 37 Q154 33 177 47"/>
+ <path d="M175 46 L185 48 L184 59 L178 59 Z M176 77 L182 68 L186 69 L184 80 Z" fill="#fffdf6"/>
+ <path d="M188 70 Q200 69 200 73 Q196 79 181 81 Q149 108 96 109 Q74 111 70 135" fill="#eee9da"/>
+ <path d="M64 132 Q67 110 68 96 C67 73 79 52 86 52 C102 53 123 78 148 77 Q163 76 175 72 Q171 84 155 90 Q124 100 99 99 Q80 103 73 131" fill="#e2b8a6" stroke="#aa8072"/>
+ </g>
+ <circle cx="86" cy="51" r="9" fill="#579b78" fill-opacity=".22" stroke="#297358" stroke-width="1"/>
+ <circle cx="86" cy="51" r="3" fill="#195f46"/>
+ </symbol>
+<symbol id="kaf" viewBox="32 15 186 126">
+ <g fill="none" stroke="#758b80" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M47 135 Q49 113 45 91 Q37 65 50 48 Q62 27 98 23 Q141 16 167 25 L177 36 Q182 42 189 46 Q204 51 199 58 Q195 61 187 60" fill="#eee9da"/>
+ <path d="M47 135 Q52 101 52 82 Q51 67 65 57 Q77 51 81 53 Q83 66 87 62 Q88 58 86 52 Q100 38 126 37 Q154 33 177 47"/>
+ <path d="M175 46 L185 48 L184 59 L178 59 Z M176 77 L182 68 L186 69 L184 80 Z" fill="#fffdf6"/>
+ <path d="M188 70 Q200 69 200 73 Q196 79 181 81 Q149 108 96 109 Q74 111 70 135" fill="#eee9da"/>
+ <path d="M64 132 Q67 110 68 96 C69 78 86 48 104 45 C118 45 132 77 150 77 Q166 76 175 72 Q171 84 155 90 Q124 100 99 99 Q80 103 73 131" fill="#e2b8a6" stroke="#aa8072"/>
+ </g>
+ <circle cx="103" cy="45" r="9" fill="#579b78" fill-opacity=".22" stroke="#297358" stroke-width="1"/>
+ <circle cx="103" cy="45" r="3" fill="#195f46"/>
+ </symbol>
+<symbol id="middleTongue" viewBox="32 15 186 126">
+ <g fill="none" stroke="#758b80" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M47 135 Q49 113 45 91 Q37 65 50 48 Q62 27 98 23 Q141 16 167 25 L177 36 Q182 42 189 46 Q204 51 199 58 Q195 61 187 60" fill="#eee9da"/>
+ <path d="M47 135 Q52 101 52 82 Q51 67 65 57 Q77 51 81 53 Q83 66 87 62 Q88 58 86 52 Q100 38 126 37 Q154 33 177 47"/>
+ <path d="M175 46 L185 48 L184 59 L178 59 Z M176 77 L182 68 L186 69 L184 80 Z" fill="#fffdf6"/>
+ <path d="M188 70 Q200 69 200 73 Q196 79 181 81 Q149 108 96 109 Q74 111 70 135" fill="#eee9da"/>
+ <path d="M64 132 Q67 110 68 96 C67 83 101 45 128 40 C151 42 151 73 175 72 Q171 84 155 90 Q124 100 99 99 Q80 103 73 131" fill="#e2b8a6" stroke="#aa8072"/>
+ </g>
+ <circle cx="129" cy="39" r="9" fill="#579b78" fill-opacity=".22" stroke="#297358" stroke-width="1"/>
+ <circle cx="129" cy="39" r="3" fill="#195f46"/>
+ </symbol>
+<symbol id="sideTongue" viewBox="32 15 186 126">
+ <g fill="none" stroke="#758b80" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M47 135 Q49 113 45 91 Q37 65 50 48 Q62 27 98 23 Q141 16 167 25 L177 36 Q182 42 189 46 Q204 51 199 58 Q195 61 187 60" fill="#eee9da"/>
+ <path d="M47 135 Q52 101 52 82 Q51 67 65 57 Q77 51 81 53 Q83 66 87 62 Q88 58 86 52 Q100 38 126 37 Q154 33 177 47"/>
+ <path d="M175 46 L185 48 L184 59 L178 59 Z M176 77 L182 68 L186 69 L184 80 Z" fill="#fffdf6"/>
+ <path d="M188 70 Q200 69 200 73 Q196 79 181 81 Q149 108 96 109 Q74 111 70 135" fill="#eee9da"/>
+ <path d="M64 132 Q67 110 68 96 C72 83 112 48 145 46 Q161 45 175 65 Q171 84 155 90 Q124 100 99 99 Q80 103 73 131" fill="#e2b8a6" stroke="#aa8072"/>
+ </g>
+ <circle cx="146" cy="45" r="9" fill="#579b78" fill-opacity=".22" stroke="#297358" stroke-width="1"/>
+ <circle cx="146" cy="45" r="3" fill="#195f46"/>
+ </symbol>
+<symbol id="lam" viewBox="32 15 186 126">
+ <g fill="none" stroke="#758b80" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M47 135 Q49 113 45 91 Q37 65 50 48 Q62 27 98 23 Q141 16 167 25 L177 36 Q182 42 189 46 Q204 51 199 58 Q195 61 187 60" fill="#eee9da"/>
+ <path d="M47 135 Q52 101 52 82 Q51 67 65 57 Q77 51 81 53 Q83 66 87 62 Q88 58 86 52 Q100 38 126 37 Q154 33 177 47"/>
+ <path d="M175 46 L185 48 L184 59 L178 59 Z M176 77 L182 68 L186 69 L184 80 Z" fill="#fffdf6"/>
+ <path d="M188 70 Q200 69 200 73 Q196 79 181 81 Q149 108 96 109 Q74 111 70 135" fill="#eee9da"/>
+ <path d="M64 132 Q67 110 68 96 C74 86 118 72 138 58 Q147 48 156 45 Q162 49 158 57 Q171 84 155 90 Q124 100 99 99 Q80 103 73 131" fill="#e2b8a6" stroke="#aa8072"/>
+ </g>
+ <circle cx="155" cy="44" r="9" fill="#579b78" fill-opacity=".22" stroke="#297358" stroke-width="1"/>
+ <circle cx="155" cy="44" r="3" fill="#195f46"/>
+ </symbol>
+<symbol id="nun" viewBox="32 15 186 126">
+ <g fill="none" stroke="#758b80" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M47 135 Q49 113 45 91 Q37 65 50 48 Q62 27 98 23 Q141 16 167 25 L177 36 Q182 42 189 46 Q204 51 199 58 Q195 61 187 60" fill="#eee9da"/>
+ <path d="M47 135 Q52 101 52 82 Q51 67 65 57 Q77 51 81 53 Q83 66 87 62 Q88 58 86 52 Q100 38 126 37 Q154 33 177 47"/>
+ <path d="M175 46 L185 48 L184 59 L178 59 Z M176 77 L182 68 L186 69 L184 80 Z" fill="#fffdf6"/>
+ <path d="M188 70 Q200 69 200 73 Q196 79 181 81 Q149 108 96 109 Q74 111 70 135" fill="#eee9da"/>
+ <path d="M64 132 Q67 110 68 96 C74 86 128 79 150 57 Q166 36 166 46 Q169 53 161 60 Q171 84 155 90 Q124 100 99 99 Q80 103 73 131" fill="#e2b8a6" stroke="#aa8072"/>
+ </g>
+ <circle cx="165" cy="45" r="9" fill="#579b78" fill-opacity=".22" stroke="#297358" stroke-width="1"/>
+ <circle cx="165" cy="45" r="3" fill="#195f46"/>
+ </symbol>
+<symbol id="ra" viewBox="32 15 186 126">
+ <g fill="none" stroke="#758b80" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M47 135 Q49 113 45 91 Q37 65 50 48 Q62 27 98 23 Q141 16 167 25 L177 36 Q182 42 189 46 Q204 51 199 58 Q195 61 187 60" fill="#eee9da"/>
+ <path d="M47 135 Q52 101 52 82 Q51 67 65 57 Q77 51 81 53 Q83 66 87 62 Q88 58 86 52 Q100 38 126 37 Q154 33 177 47"/>
+ <path d="M175 46 L185 48 L184 59 L178 59 Z M176 77 L182 68 L186 69 L184 80 Z" fill="#fffdf6"/>
+ <path d="M188 70 Q200 69 200 73 Q196 79 181 81 Q149 108 96 109 Q74 111 70 135" fill="#eee9da"/>
+ <path d="M64 132 Q67 110 68 96 C74 87 121 77 143 59 Q157 41 160 48 Q161 53 155 60 Q171 84 155 90 Q124 100 99 99 Q80 103 73 131" fill="#e2b8a6" stroke="#aa8072"/>
+ </g>
+ <circle cx="158" cy="46" r="9" fill="#579b78" fill-opacity=".22" stroke="#297358" stroke-width="1"/>
+ <circle cx="158" cy="46" r="3" fill="#195f46"/>
+ </symbol>
+<symbol id="dental" viewBox="32 15 186 126">
+ <g fill="none" stroke="#758b80" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M47 135 Q49 113 45 91 Q37 65 50 48 Q62 27 98 23 Q141 16 167 25 L177 36 Q182 42 189 46 Q204 51 199 58 Q195 61 187 60" fill="#eee9da"/>
+ <path d="M47 135 Q52 101 52 82 Q51 67 65 57 Q77 51 81 53 Q83 66 87 62 Q88 58 86 52 Q100 38 126 37 Q154 33 177 47"/>
+ <path d="M175 46 L185 48 L184 59 L178 59 Z M176 77 L182 68 L186 69 L184 80 Z" fill="#fffdf6"/>
+ <path d="M188 70 Q200 69 200 73 Q196 79 181 81 Q149 108 96 109 Q74 111 70 135" fill="#eee9da"/>
+ <path d="M64 132 Q67 110 68 96 C74 86 133 78 158 58 Q175 41 174 48 Q176 56 166 63 Q171 84 155 90 Q124 100 99 99 Q80 103 73 131" fill="#e2b8a6" stroke="#aa8072"/>
+ </g>
+ <circle cx="173" cy="48" r="9" fill="#579b78" fill-opacity=".22" stroke="#297358" stroke-width="1"/>
+ <circle cx="173" cy="48" r="3" fill="#195f46"/>
+ </symbol>
+<symbol id="sibilant" viewBox="32 15 186 126">
+ <g fill="none" stroke="#758b80" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M47 135 Q49 113 45 91 Q37 65 50 48 Q62 27 98 23 Q141 16 167 25 L177 36 Q182 42 189 46 Q204 51 199 58 Q195 61 187 60" fill="#eee9da"/>
+ <path d="M47 135 Q52 101 52 82 Q51 67 65 57 Q77 51 81 53 Q83 66 87 62 Q88 58 86 52 Q100 38 126 37 Q154 33 177 47"/>
+ <path d="M175 46 L185 48 L184 59 L178 59 Z M176 77 L182 68 L186 69 L184 80 Z" fill="#fffdf6"/>
+ <path d="M188 70 Q200 69 200 73 Q196 79 181 81 Q149 108 96 109 Q74 111 70 135" fill="#eee9da"/>
+ <path d="M64 132 Q67 110 68 96 C74 83 117 72 143 75 Q161 78 178 72 Q171 84 155 90 Q124 100 99 99 Q80 103 73 131" fill="#e2b8a6" stroke="#aa8072"/>
+ </g>
+ <circle cx="178" cy="75" r="9" fill="#579b78" fill-opacity=".22" stroke="#297358" stroke-width="1"/>
+ <circle cx="178" cy="75" r="3" fill="#195f46"/>
+ </symbol>
+<symbol id="interdental" viewBox="32 15 186 126">
+ <g fill="none" stroke="#758b80" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M47 135 Q49 113 45 91 Q37 65 50 48 Q62 27 98 23 Q141 16 167 25 L177 36 Q182 42 189 46 Q204 51 199 58 Q195 61 187 60" fill="#eee9da"/>
+ <path d="M47 135 Q52 101 52 82 Q51 67 65 57 Q77 51 81 53 Q83 66 87 62 Q88 58 86 52 Q100 38 126 37 Q154 33 177 47"/>
+ <path d="M175 46 L185 48 L184 59 L178 59 Z M176 77 L182 68 L186 69 L184 80 Z" fill="#fffdf6"/>
+ <path d="M188 70 Q200 69 200 73 Q196 79 181 81 Q149 108 96 109 Q74 111 70 135" fill="#eee9da"/>
+ <path d="M64 132 Q67 110 68 96 C74 86 125 74 153 70 Q166 65 181 58 Q183 64 174 68 Q171 84 155 90 Q124 100 99 99 Q80 103 73 131" fill="#e2b8a6" stroke="#aa8072"/>
+ </g>
+ <circle cx="181" cy="59" r="9" fill="#579b78" fill-opacity=".22" stroke="#297358" stroke-width="1"/>
+ <circle cx="181" cy="59" r="3" fill="#195f46"/>
+ </symbol>
+<symbol id="lipTeeth" viewBox="32 15 186 126">
+ <g fill="none" stroke="#758b80" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M47 135 Q49 113 45 91 Q37 65 50 48 Q62 27 98 23 Q141 16 167 25 L177 36 Q182 42 189 46 Q204 51 199 58 Q195 61 187 60" fill="#eee9da"/>
+ <path d="M47 135 Q52 101 52 82 Q51 67 65 57 Q77 51 81 53 Q83 66 87 62 Q88 58 86 52 Q100 38 126 37 Q154 33 177 47"/>
+ <path d="M175 46 L185 48 L184 59 L178 59 Z M176 77 L182 68 L186 69 L184 80 Z" fill="#fffdf6"/>
+ <path d="M183 58 Q193 60 194 67 Q196 77 181 81 Q149 108 96 109 Q74 111 70 135" fill="#eee9da"/>
+ <path d="M64 132 Q67 110 68 96 C75 81 100 65 125 68 Q151 74 173 72 Q171 84 155 90 Q124 100 99 99 Q80 103 73 131" fill="#e2b8a6" stroke="#aa8072"/>
+ </g>
+ <circle cx="184" cy="60" r="9" fill="#579b78" fill-opacity=".22" stroke="#297358" stroke-width="1"/>
+ <circle cx="184" cy="60" r="3" fill="#195f46"/>
+ </symbol>
+<symbol id="lips" viewBox="32 15 186 126">
+ <g fill="none" stroke="#758b80" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M47 135 Q49 113 45 91 Q37 65 50 48 Q62 27 98 23 Q141 16 167 25 L177 36 Q182 42 189 46 Q205 54 199 62 Q196 66 188 65" fill="#eee9da"/>
+ <path d="M47 135 Q52 101 52 82 Q51 67 65 57 Q77 51 81 53 Q83 66 87 62 Q88 58 86 52 Q100 38 126 37 Q154 33 177 47"/>
+ <path d="M175 46 L185 48 L184 59 L178 59 Z M176 77 L182 68 L186 69 L184 80 Z" fill="#fffdf6"/>
+ <path d="M188 65 Q200 62 200 69 Q196 79 181 81 Q149 108 96 109 Q74 111 70 135" fill="#eee9da"/>
+ <path d="M64 132 Q67 110 68 96 C75 81 100 65 125 68 Q151 74 173 72 Q171 84 155 90 Q124 100 99 99 Q80 103 73 131" fill="#e2b8a6" stroke="#aa8072"/>
+ </g>
+ <circle cx="194" cy="65" r="9" fill="#579b78" fill-opacity=".22" stroke="#297358" stroke-width="1"/>
+ <circle cx="194" cy="65" r="3" fill="#195f46"/>
+ </symbol>
+<symbol id="roundLips" viewBox="32 15 186 126">
+ <g fill="none" stroke="#758b80" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M47 135 Q49 113 45 91 Q37 65 50 48 Q62 27 98 23 Q141 16 167 25 L177 36 Q182 42 189 46 Q210 48 207 58 Q202 63 190 61" fill="#eee9da"/>
+ <path d="M47 135 Q52 101 52 82 Q51 67 65 57 Q77 51 81 53 Q83 66 87 62 Q88 58 86 52 Q100 38 126 37 Q154 33 177 47"/>
+ <path d="M175 46 L185 48 L184 59 L178 59 Z M176 77 L182 68 L186 69 L184 80 Z" fill="#fffdf6"/>
+ <path d="M189 69 Q205 65 207 72 Q199 81 181 81 Q149 108 96 109 Q74 111 70 135" fill="#eee9da"/>
+ <path d="M64 132 Q67 110 68 96 C75 81 100 65 125 68 Q151 74 173 72 Q171 84 155 90 Q124 100 99 99 Q80 103 73 131" fill="#e2b8a6" stroke="#aa8072"/>
+ </g>
+ <circle cx="198" cy="65" r="9" fill="#579b78" fill-opacity=".22" stroke="#297358" stroke-width="1"/>
+ <circle cx="198" cy="65" r="3" fill="#195f46"/>
+ </symbol>
+</defs></svg>

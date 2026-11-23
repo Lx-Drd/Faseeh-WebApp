@@ -1,84 +1,62 @@
-# Faseeh backend (FastAPI + librosa + FastDTW)
+# Faseeh · فصيح
 
-## Run it
+Faseeh is a browser-based Qur’an recitation practice studio. Choose a surah and ayah range, listen to Sheikh Muhammad Siddiq al-Minshawi’s murattal recitation, and select any word to study its pronunciation. Record with the microphone or upload audio to get word-level feedback from the pretrained Quran Muaalem model. The static library contains seven surahs, 103 ayahs and 388 timed words.
 
-1. From this folder (Python 3.10+):
-   ```
-   pip install -r requirements.txt
-   uvicorn main:app --reload --port 8000
-   ```
-   `requirements.txt` includes `imageio-ffmpeg`, which ships its own ffmpeg, so you don't
-   need to install ffmpeg separately. A system ffmpeg on PATH is used first if you have one.
-   You can also point to a specific binary with `FASEEH_FFMPEG=C:\path\to\ffmpeg.exe`.
-2. Check http://127.0.0.1:8000/health. `"ok": true` and an `ffmpeg` path mean decoding works.
-   The server also logs `Using ffmpeg: ...` on startup.
-3. Open the frontend and record: its feedback badge should say **Live analysis** instead of
-   "Demo · server offline".
+## Run locally
 
-## Modes
+On Linux, install Python 3.12, FFmpeg and ffprobe. From the project root, run the following commands for a CPU installation. The initial model download is approximately 2.42 GB and requires access to Hugging Face. The server reuses the cached checkpoint on later runs.
 
-| env var | values | effect |
-|---|---|---|
-| `FASEEH_ANALYSIS_MODE` | `mock` (default) | Real decoding, silence/length checks and DTW score; the flagged word is the ayah's prepared `focus_word` |
-| | `dtw` | Experimental: flags words whose alignment cost stands out (uncalibrated) |
-| `FASEEH_MOCK_OUTCOME` | `alternate` (default), `errors`, `ok` | Mock only: alternate gives errors on the 1st take of an ayah, ok on the 2nd, … |
-| `FASEEH_ALLOWED_ORIGINS` | comma list | Extra CORS origins (localhost, 127.0.0.1 and file:// are allowed already) |
-
-Windows example: `set FASEEH_ANALYSIS_MODE=dtw` then `uvicorn main:app --port 8000`.
-
-## API contract
-
-`POST /analyze`, multipart form: `file` (recording), `surah` ("112"), `ayah` ("1").
-
-```json
-{
-  "surah": 112, "ayah": 1,
-  "status": "errors",
-  "score": 84,
-  "reason": null,
-  "message": null,
-  "errors": [{ "wordIndex": 3, "word": "أَحَدٌ", "rule": "hha", "confidence": 0.9 }]
-}
+```bash
+python3.12 -m venv .venv
+. .venv/bin/activate
+python -m pip install --index-url https://download.pytorch.org/whl/cpu torch==2.8.0
+python -m pip install -r requirements.txt -r requirements-model.txt
+python -m pip check
+python -m uvicorn main:app --host 127.0.0.1 --port 8000
 ```
 
-- `status`:
-  - `ok`: `errors` is `[]`.
-  - `errors`: one or more entries.
-  - `unclear`: `reason` is one of `silent`, `too_short`, `duration_mismatch` or `too_different`, and `message` explains it.
-- `score`: 0–100, or `null` when the recording was silent or too short.
-- `wordIndex`: 0-based index into `text.split(" ")`, the same split the frontend uses.
-- `rule`: a key of the frontend's `RULES` object. It's guessed from the word's letters (`rules.guess_rule`).
+Open **http://127.0.0.1:8000/** on the same machine. The backend serves the complete reader at the root. Set `FASEEH_MODEL_PATH` to the directory of the pinned model files to use an existing local checkpoint. The prepared cloud workspace uses `/workspace/.faseeh-venv` and `/workspace/.faseeh-muaalem-model`.
 
-Request problems return `{"detail": "..."}`:
-- `400` bad or unknown surah/ayah
-- `413` file over 10 MB
-- `422` empty or undecodable audio
-- `502` no reference audio (dtw mode)
-- `500` unexpected error
+For a GPU install, HTTPS hosting, a Hugging Face Docker Space and primary/fallback configuration, see [deployment instructions](DEPLOYMENT.md). For library sources and model attribution, see [study library](web/data/SOURCES.md) and [model details](web/data/MODEL.md).
 
-## Files
+## Practice flow
 
-| file | role |
-|---|---|
-| `main.py` | FastAPI app, CORS, response schema, `/analyze`, `/health` |
-| `service.py` | Validation, temp file, reference lookup, mock outcome, response shaping |
-| `analysis.py` | librosa loading, quality gates, MFCC features, FastDTW, word costs, mock/dtw judging |
-| `quran_data.py` | Ayah texts, word splits, mock focus words |
-| `rules.py` | Tajweed rule details + `guess_rule(word)` |
-| `reference.py` | Finds the reference: `reference_audio/` → `reference_cache/` → download from everyayah.com |
+| Use cases from SRD v2.1 | In the studio |
+| --- | --- |
+| UC-01, UC-02 | Search by surah name or number, choose the starting and ending ayahs, and read the selection in the bundled KFGQPC Hafs font. |
+| UC-03, UC-04, UC-05 | Select any word for its phonetic script, letter articulation, advanced guidance and timed expert playback. The same card explains words highlighted by the analysis. |
+| UC-06, UC-11 | Record after granting microphone access, watch the level and elapsed time, then finish. Upload is also available when microphone access is denied. |
+| UC-12 | Analyze after recording. The server infers the recited portion of the selected range. The reader displays word counts, percentage and coverage, or a specific failure message. Cancel dismisses an in-flight analysis. |
+| UC-07, UC-08, UC-09 | Choose from 13 interface languages, change text direction, and toggle transliteration and advanced rules. Preferences persist in the browser. |
+| UC-10 | Play the full recording or use measured timings to replay the selected word or ayah in the correction card. |
 
-## Next step: calibrate the DTW
+The guide includes a one-minute walkthrough, 13 subtitle tracks and an interactive tour. Expert audio, word boundaries, the Uthmani font, guides and diagrams ship as static files. The client keeps the current recording in memory. The server deletes its temporary audio after processing. Setting `FASEEH_RECORDINGS_DIR` outside the public web tree enables a separate, explicit contribution option with an optional name.
 
-The thresholds in `AnalysisConfig` (`analysis.py`) were set on synthetic audio. The server
-logs `meanStep` and `wordCosts` for every request. Record each ayah a few times correctly and
-a few times with one deliberate mistake, run in `dtw` mode, and compare the logged numbers.
-Then set:
-- `score_best` / `score_worst` (mean distance that should map to 100 / 0)
-- `relative_threshold` (how much a word must stand out to be flagged)
-- `unclear_below_score`
+## API and acceptance checks
 
-Word positions in the reference are estimated from letter counts (`word_frame_bounds`).
-Real word timings will make localization much more accurate.
+Submit the complete file as multipart form data with `surah`, `startAyah` and `endAyah`. Maximum file size is 25,000,000 bytes and maximum decoded duration is 330 seconds. Feedback includes the covered ayah range, word counts, per-letter findings, and word intervals in seconds. The server admits up to 40 analysis requests and reports busy when all slots are occupied.
 
-**Text:** `quran_data.py` and the frontend use prototype text. Replace both with verified
-Uthmani text.
+With the server running, submit the bundled first ayah of Al-Ikhlas against the entire surah. Check that the returned coverage ends at ayah 1 and four words have timings. This exercises audio decoding, the actual checkpoint and alignment.
+
+```bash
+curl --fail-with-body -F file=@web/audio/112-1.mp3 -F surah=112 \
+  -F startAyah=1 -F endAyah=4 http://127.0.0.1:8000/api/analyze
+```
+
+Run the automated checks from the project root. The Python tests use the app and model dependencies. The browser test also needs Playwright for Python and Chromium on PATH or installed for Playwright. JavaScript tests use Node 22 or later.
+
+```bash
+python -m unittest discover -s tests -p 'test_*.py' -v
+node --test tests/*.test.mjs
+python tests/browser_flow.py
+```
+
+The API tests cover admission control and validation with an inference fixture. Browser tests use controlled server responses for failure and failover cases. Full inference was also tested separately on CPU with real audio, including Minshawi, al-Shatri and Maher al-Muaiqly, a four-ayah passage and a wrong-passage upload. Production GPU throughput, public deployments, and specialist sign-off on recitation guidance and articulation diagrams remain acceptance work.
+
+## Model advisory
+
+This Quranic Teacher is an artificial-intelligence model that may make mistakes. It is intended for assistance only and must not be relied upon. It is not a replacement for a proficient, authorized teacher, because the Quran is only received through oral transmission (mushafahah).
+
+هذا المعلّم القرآني نموذج ذكاء اصطناعي قد يخطئ؛ فهو للإعانة فقط ولا يُعتمد عليه، وليس بديلاً عن معلّمٍ مُتقِنٍ مُجاز؛ لأنّ القرآن لا يُؤخذ إلا بالمشافهة.
+
+Interface providers must show this notice before first use, keep it available afterwards, and display it in Arabic and each interface language. The upstream license and notice accompany the project. [Quran Muaalem License](web/data/licenses/Quran-Muaalem-LICENSE.txt) · [NOTICE](NOTICE)

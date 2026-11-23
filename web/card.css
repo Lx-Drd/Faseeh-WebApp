@@ -1,0 +1,28 @@
+.word-card{box-sizing:border-box;min-width:0;background:#fcfbf7;border:1px solid #d4ded3;border-radius:16px;padding:clamp(16px,3vw,27px);color:#233d31;text-align:start}
+.wc-header,.wc-error,.wc-place-layout,.wc-letters{display:flex;align-items:center;gap:10px}
+.wc-header{justify-content:space-between;align-items:flex-start;margin-bottom:13px}
+.wc-label,.wc-section summary{font-size:.86rem;font-weight:650}
+.wc-label{color:#4d6d59}
+.word-card .wc-word,.wc-phonetic,.wc-letter,.wc-error bdi{font-family:"KFGQPC Hafs",serif}
+.word-card .wc-word{font-size:2.3rem;line-height:1.65;font-weight:400;margin:0;text-align:start}
+.word-card button{font:inherit;cursor:pointer}
+.wc-close{border:1px solid #cbd8ca;border-radius:50%;background:transparent;color:#294b39;width:35px;height:35px;font-size:1.25rem!important}
+.wc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(225px,100%),1fr));align-items:start;gap:9px}
+.wc-section{background:#fff;border:1px solid #dde3d8;border-radius:10px;padding:10px 12px;min-width:0}
+.wc-section summary{cursor:pointer;line-height:1.5;overflow-wrap:anywhere}
+.wc-content{padding-top:7px;font-size:.91rem;line-height:1.55}
+.wc-phonetic{font-size:1.45rem;line-height:1.85;text-align:center;overflow-wrap:anywhere}
+.wc-place-layout{flex-wrap:wrap;align-items:center}
+.wc-diagram{width:85px;height:58px;flex:none;display:block}
+.wc-description{flex:1 1 100px;margin:0;font-size:.86rem}
+.wc-letters{gap:4px;flex-wrap:wrap;justify-content:flex-start;margin-block-end:6px}
+.word-card .wc-letter{font-family:"KFGQPC Hafs",serif;font-size:1.2rem;border:1px solid #d5dfd5;color:#224735;background:#fff;border-radius:5px;min-width:32px;min-height:34px;padding:0 5px}
+.wc-letter[aria-pressed=true]{background:#235644;color:white;border-color:#235644}
+.wc-play{border:1px solid #c8d6c8;background:#f3f7f1;color:#24523e;border-radius:7px;padding:5px 10px;margin-inline-end:5px;margin-block:2px}
+.wc-play:disabled{opacity:.55;cursor:default}
+.wc-play-status{margin:6px 0 0;color:#92412e}.wc-play-status:empty{display:none}
+.wc-error{flex-wrap:wrap;background:#fcf1df;color:#653e19;border-radius:7px;padding:8px 12px;font-size:.9rem;margin:5px 0 12px}
+.wc-error bdi{font-size:1.25rem}
+.word-card :focus-visible{outline:2px solid #276d54;outline-offset:2px}
+.wc-context{display:block;color:#52685a;text-align:center;margin-block-start:6px}
+.wc-error .wc-value{font:inherit;font-weight:600}
