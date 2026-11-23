@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#123d35"><title>Faseeh · Recitation practice</title>
+  <link rel="icon" href="/assets/book.svg"><link rel="stylesheet" href="/studio.css"><link rel="stylesheet" href="/card.css">
+  <script src="/config.js"></script><script type="module" src="/studio.js"></script>
+</head>
+<body>
+<header class="topbar"><div class="top-inner">
+  <a class="brand" href="/" aria-label="Faseeh"><img src="/assets/book.svg" width="42" height="42" alt=""><b>Faseeh</b><span lang="ar">فصيح</span></a>
+  <div class="nav-right"><button id="guide-button" class="nav-button"><i data-icon="guide"></i><span data-i="guide">How to practice</span></button>
+    <label class="language-wrap"><i data-icon="globe"></i><select id="language" aria-label="Language"></select><i data-icon="down"></i></label>
+  </div>
+</div></header>
+<main class="layout">
+  <aside class="rail" id="library">
+    <div class="rail-heading"><i data-icon="library"></i><h2 data-i="library">Surah library</h2><button id="menu-toggle" class="menu-toggle" aria-expanded="false" aria-controls="library-content"><i data-icon="down"></i></button></div>
+    <div id="library-content">
+      <label class="search"><i data-icon="search"></i><input type="search" id="search" autocomplete="off" data-placeholder="search"></label>
+      <nav id="surah-list" aria-label="Surahs"></nav><p id="no-matches" data-i="no_matches" hidden></p>
+    </div>
+    <fieldset id="preferences" class="preferences">
+      <label><span data-i="transliteration">Transliteration</span><input id="transliteration" type="checkbox" role="switch"><span class="switch"></span></label>
+      <label><span data-i="advanced">Advanced rules</span><input id="advanced" type="checkbox" role="switch" checked><span class="switch"></span></label>
+    </fieldset>
+  </aside>
+  <div class="workspace">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-inner"><p class="eyebrow"><i data-icon="book"></i><span data-i="studio">Practice studio</span></p>
+        <h1 id="hero-title"></h1>
+        <div class="hero-meta"><span id="hero-arabic" class="quran" lang="ar" dir="rtl"></span><b aria-hidden="true">·</b><span id="ayah-count"></span></div>
+        <button id="listen" class="listen"><i data-icon="play"></i><span data-i="listen">Listen</span></button>
+        <small id="reciter" data-i="reciter">Minshawi · Murattal</small>
+      </div>
+    </section><p class="error" id="audio-message" role="status" hidden></p>
+    <section id="practice" class="practice panel" aria-labelledby="practice-title">
+      <div class="practice-row"><div class="practice-info"><span class="mic-disc"><i data-icon="wave"></i></span><div><h2 id="practice-title" data-i="practice">Recitation practice</h2>
+        <p id="practice-state" role="status"></p></div></div>
+        <div class="practice-controls"><button class="primary" id="record"><i data-icon="mic"></i><span data-i="record">Record</span></button>
+          <button class="secondary" id="upload"><i data-icon="upload"></i><span data-i="upload">Upload audio</span></button>
+          <input id="upload-file" type="file" accept="audio/*,.webm,.mp4,.m4a,.ogg,.opus,.wav,.mp3,.flac" hidden>
+          <button class="secondary" id="cancel" hidden data-i="cancel"></button></div>
+      </div>
+      <aside class="ai-notice" id="ai-notice"><i data-icon="info"></i><div><p data-i="notice"></p><p id="notice-ar" dir="rtl" lang="ar"></p></div></aside>
+      <meter id="level" min="0" max="1" value="0" hidden></meter><p id="practice-message" class="error" role="alert" hidden></p>
+      <div id="consent-area" hidden><label><input id="consent" type="checkbox"> <span data-i="consent"></span></label><input id="contributor" data-placeholder="contributor" maxlength="80" hidden></div>
+      <button id="play-mine" class="quiet" hidden><i data-icon="play"></i><span data-i="play_mine"></span></button>
+    </section>
+    <section id="summary" class="summary" aria-live="polite" hidden></section>
+    <section class="passage panel">
+      <div class="passage-heading"><div><p class="eyebrow forest"><i data-icon="book"></i><span data-i="passage">Selected passage</span></p>
+        <h2 id="range-heading"></h2></div>
+        <div id="range"><label><span data-i="from">From ayah</span><select id="from-ayah"></select></label><span class="range-dash" aria-hidden="true">–</span><label><span data-i="to">To ayah</span><select id="to-ayah"></select></label></div>
+      </div>
+      <p class="word-hint"><i data-icon="pointer"></i><span data-i="select_word">Select a word for pronunciation</span></p>
+      <div id="verses"></div>
+    </section>
+  </div>
+</main>
+<dialog id="feedback">
+  <div id="card-mount"></div>
+  <div class="card-preferences">
+    <label><input id="card-advanced" type="checkbox" role="switch"><span data-i="advanced">Advanced rules</span></label>
+    <label><i data-icon="globe"></i><select id="card-language" aria-label="Language"></select></label>
+  </div>
+</dialog>
+<p id="load-error" role="alert" hidden></p>
+</body></html>

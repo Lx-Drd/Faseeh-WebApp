@@ -1,0 +1,10 @@
+*
+!Dockerfile
+!requirements.txt
+!requirements-model.txt
+!main.py
+!recording_service.py
+!muaalem_engine.py
+!NOTICE
+!web/
+!web/**

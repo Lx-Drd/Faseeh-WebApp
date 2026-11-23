@@ -1,10 +1,5 @@
-fastapi>=0.110
-uvicorn>=0.29
-python-multipart>=0.0.9
-librosa>=0.10
-fastdtw>=0.3.4
-scipy>=1.11
-numpy>=1.26
-# Bundles an ffmpeg binary, used to decode the browser's webm/mp4/ogg recordings.
-# A system ffmpeg on PATH is used instead when one is installed.
-imageio-ffmpeg>=0.4.9
+fastapi>=0.115.6,<1
+starlette>=0.44
+uvicorn>=0.29,<1
+python-multipart>=0.0.20
+numpy>=1.26,<3
