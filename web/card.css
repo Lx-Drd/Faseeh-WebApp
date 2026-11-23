@@ -26,3 +26,5 @@
 .word-card :focus-visible{outline:2px solid #276d54;outline-offset:2px}
 .wc-context{display:block;color:#52685a;text-align:center;margin-block-start:6px}
 .wc-error .wc-value{font:inherit;font-weight:600}
+.wc-issue-choices{display:flex;flex-wrap:wrap;gap:6px}.wc-error-choice{border:1px solid var(--line);border-radius:7px;padding:5px 9px;color:#863f30;cursor:pointer}
+.wc-error-choice[aria-pressed=true]{outline:2px solid currentColor;outline-offset:-2px}

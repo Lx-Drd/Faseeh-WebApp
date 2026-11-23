@@ -55,8 +55,11 @@ def run(page, origin):
             code = "mismatch" if outcome == "mismatch" else "busy"
             route.fulfill(status=503 if code == "busy" else 422, json={"code": code})
         else:
-            issues = [{"ayah": 1, "wordIndex": 1, "letter": "ه", "type": "substitution"}] if outcome == "correction" else []
-            correct = 4 - len(issues)
+            issues = [
+                {"ayah": 1, "wordIndex": 1, "letter": "ه", "type": "pronunciation"},
+                {"ayah": 1, "wordIndex": 1, "letter": "و", "type": "vowel"},
+            ] if outcome == "correction" else []
+            correct = 4 - len({issue["wordIndex"] for issue in issues})
             route.fulfill(json={"surah": 112, "startAyah": 1, "endAyah": 1,
                 "correctWords": correct, "totalWords": 4, "percentage": correct * 25, "errors": issues,
                 "wordTimings": [{"ayah": 1, "wordIndex": i, "start": i / 4, "end": (i+1)/4}
@@ -165,7 +168,15 @@ def run(page, origin):
     flagged = page.locator("#verses .flagged")
     expect(flagged).to_have_count(1)
     flagged.click()
+    expect(card.locator(".wc-error")).to_have_count(1)
     expect(card.locator(".wc-error")).to_contain_text("ه")
+    expect(card.locator(".wc-error-choice")).to_have_count(2)
+    card.locator(".wc-error-choice").last.click()
+    expect(card.locator(".wc-error")).to_contain_text("و")
+    expect(card.locator('.wc-letter[aria-pressed="true"]')).to_contain_text("و")
+    page.locator("#card-language").select_option("ar")
+    expect(card.locator(".wc-error-choice").last).to_have_attribute("aria-pressed", "true")
+    page.locator("#card-language").select_option("en")
     card.locator("details").last.locator(".wc-play").first.click()
     page.wait_for_function("window.lastRecordingStart >= 0.24 && window.lastRecordingStart < 0.5")
     page.keyboard.press("Escape")

@@ -1,12 +1,14 @@
 import { languages, translate, isRTL } from './i18n.js';
 import { createSession } from './session.js';
+import { Surah } from './library.js';
+import { User } from './user.js';
+import { AIEngine } from './ai-engine.js';
+import { ExpertAudio } from './word-study.js';
 import { renderCorrection, clearCorrection, stopCardAudio } from './correction.js';
 import { openGuide } from './guide.js';
 import { icon } from './icons.js';
 
 const el = id => document.getElementById(id);
-const read = key => { try { return localStorage.getItem('faseeh.' + key); } catch { return null; } };
-const write = (key, value) => { try { localStorage.setItem('faseeh.' + key, value); } catch { /* preferences remain in memory */ } };
 function node(tag, cls, text) {
   const element = document.createElement(tag);
   if (cls) element.className = cls;
@@ -19,23 +21,22 @@ function buttonContent(button, symbol, text) {
 }
 
 async function startStudio() {
-  const reply = await fetch('/data/surahs.json');
-  if (!reply.ok) throw Error('Cannot load library');
-  const library = await reply.json();
+  const library = await Surah.loadFromFile('/data/surahs.json');
   const config = window.FASEEH_CONFIG ?? {};
   const health = await fetch('/health', {signal: AbortSignal.timeout(2500)}).then(r => r.json()).catch(() => ({}));
-  let lang = read('language');
-  if (!languages.some(l => l.code === lang)) lang = 'en';
-  let surah = library.find(s => s.id === 112) ?? library[0];
-  let first = 1, last = surah.ayahs.length, result, activeWord;
+  const [primary, ...fallbacks] = config.analysisEndpoints ?? ['/api/analyze'];
+  const user = new User(new AIEngine(primary, fallbacks));
+  let surah = library.find(s => s.surahNumber === 112) ?? library[0];
+  let first = 1, last = surah.getAyahList().length, result, activeWord;
   let state = {phase: 'idle'}, listening = false, sequence = 0, referencePlayer;
-  const t = key => translate(lang, key);
-  const num = n => new Intl.NumberFormat(lang, {useGrouping:false}).format(n);
+  const t = key => translate(user.preferredLanguage, key);
+  const num = n => new Intl.NumberFormat(user.preferredLanguage, {useGrouping:false}).format(n);
   const rangeText = (a, b) => a === b ? num(a) : num(a) + '–' + num(b);
   const ayahLabel = (a, b) => t('ayahs') + ' ' + rangeText(a,b);
   const checkbox = id => el(id).checked;
 
   function setLocale() {
+    const lang = user.preferredLanguage;
     document.documentElement.lang = lang;
     document.documentElement.dir = isRTL(lang) ? 'rtl' : 'ltr';
     document.querySelectorAll('[data-i]').forEach(n => n.textContent = t(n.dataset.i));
@@ -59,43 +60,45 @@ async function startStudio() {
   function renderLibrary() {
     const query = el('search').value.trim().toLocaleLowerCase().normalize('NFKD')
       .replace(/[٠-٩]/g, d => String(d.charCodeAt(0)-1632)).replace(/[۰-۹]/g, d => String(d.charCodeAt(0)-1776));
-    const choices = library.filter(s => (s.id+' '+s.name+' '+s.arabicName).toLowerCase().normalize('NFKD').includes(query));
+    const choices = library.filter(s => (s.surahNumber+' '+s.nameEnglish+' '+s.nameArabic).toLowerCase().normalize('NFKD').includes(query));
     el('surah-list').replaceChildren(...choices.map(s => {
-      const b = node('button','surah-item'); b.dataset.id = s.id; b.setAttribute('aria-current',String(s.id === surah.id));
+      const b = node('button','surah-item'); b.dataset.id = s.surahNumber; b.setAttribute('aria-current',String(s.surahNumber === surah.surahNumber));
       const label = node('span','surah-label');
-      label.append(node('strong','',s.name),node('small','',num(s.ayahs.length)+' '+t('ayahs')));
-      const ar = node('span','surah-ar',s.arabicName); ar.lang = 'ar'; ar.dir = 'rtl';
-      b.append(node('span','surah-number',num(s.id)), label, ar); return b;
+      label.append(node('strong','',s.nameEnglish),node('small','',num(s.getAyahList().length)+' '+t('ayahs')));
+      const ar = node('span','surah-ar',s.nameArabic); ar.lang = 'ar'; ar.dir = 'rtl';
+      b.append(node('span','surah-number',num(s.surahNumber)), label, ar); return b;
     }));
     el('no-matches').hidden = choices.length > 0;
   }
 
   function renderPassage() {
-    el('hero-title').textContent = lang === 'ar' ? surah.arabicName : surah.name;
+    const lang = user.preferredLanguage;
+    el('hero-title').textContent = lang === 'ar' ? surah.nameArabic : surah.nameEnglish;
     const alternate = el('hero-arabic');
-    alternate.textContent = lang === 'ar' ? surah.name : surah.arabicName;
+    alternate.textContent = lang === 'ar' ? surah.nameEnglish : surah.nameArabic;
     alternate.lang = lang === 'ar' ? 'en' : 'ar';
     alternate.dir = lang === 'ar' ? 'ltr' : 'rtl';
-    el('ayah-count').textContent = num(surah.ayahs.length)+' '+t('ayahs');
+    el('ayah-count').textContent = num(surah.getAyahList().length)+' '+t('ayahs');
     el('range-heading').textContent = ayahLabel(first,last);
     for (const [id, value] of [['from-ayah',first],['to-ayah',last]]) {
-      el(id).replaceChildren(...surah.ayahs.map(a => new Option(num(a.number),a.number)));
+      el(id).replaceChildren(...surah.getAyahList().map(a => new Option(num(a.ayahNumber),a.ayahNumber)));
       el(id).value = value;
     }
-    el('verses').replaceChildren(...surah.ayahs.filter(a => a.number >= first && a.number <= last).map(a => {
+    el('verses').replaceChildren(...surah.getAyahRange(first, last).map(a => {
       const row = node('article','ayah-row');
-      const badge = node('span','ayah-ref',num(surah.id)+':'+num(a.number)); badge.dir = 'ltr';
+      row.setAttribute('aria-label', a.getUthmaniText());
+      const badge = node('span','ayah-ref',num(surah.surahNumber)+':'+num(a.ayahNumber)); badge.dir = 'ltr';
       const line = node('div','ayah-text'); line.dir = 'rtl'; line.lang = 'ar';
       for (const [i, word] of a.words.entries()) {
-        const b = node('button','word',word.text); b.dataset.word = i; b.dataset.ayah = a.number;
-        if (result?.errors.some(e => e.ayah === a.number && e.wordIndex === i)) {
+        const b = node('button','word',word.text); b.dataset.word = i; b.dataset.ayah = a.ayahNumber;
+        if (result?.errors.some(e => e.ayah === a && e.positionIndex === i)) {
           b.classList.add('flagged');
           b.setAttribute('aria-haspopup','dialog');
         }
         line.append(b, document.createTextNode(' '));
       }
       const text = node('div'); text.append(line);
-      if (checkbox('transliteration')) {const tr=node('p','translit',a.transliteration); tr.dir='ltr'; text.append(tr);}
+      if (user.transliterationEnabled) {const tr=node('p','translit',a.getTransliteration()); tr.dir='ltr'; text.append(tr);}
       row.append(badge,text); return row;
     }));
     renderListen(); renderSummary();
@@ -123,7 +126,7 @@ async function startStudio() {
     if (listening) {stopReference(); return;}
     stopAll(); el('audio-message').hidden = true;
     const token = sequence;
-    const queue = surah.ayahs.filter(a => a.number >= first && a.number <= last);
+    const queue = surah.getAyahRange(first, last);
     listening = true; renderListen();
     function fail() {
       if (sequence !== token) return;
@@ -132,8 +135,8 @@ async function startStudio() {
     function next(index) {
       if (sequence !== token) return;
       if (index >= queue.length) {stopReference(); return;}
-      if (!queue[index].audio) {fail(); return;}
-      referencePlayer = new Audio(queue[index].audio);
+      referencePlayer = new ExpertAudio(queue[index]).getExpertAudioClip();
+      if (!referencePlayer) {fail(); return;}
       referencePlayer.onended = () => next(index+1);
       referencePlayer.onerror = fail; referencePlayer.play().catch(fail);
     }
@@ -142,9 +145,9 @@ async function startStudio() {
 
   function showCard() {
     if (!activeWord) return;
-    const ayah = surah.ayahs.find(a => a.number === activeWord.ayah);
-    el('card-advanced').checked = checkbox('advanced');
-    renderCorrection(el('card-mount'), {surah, ayah, wordIndex:activeWord.index, language:lang, advanced:checkbox('advanced'),
+    const ayah = surah.getAyahList().find(a => a.ayahNumber === activeWord.ayah);
+    el('card-advanced').checked = user.advancedRulesEnabled;
+    renderCorrection(el('card-mount'), {surah, ayah, wordIndex:activeWord.index, language:user.preferredLanguage, advanced:user.advancedRulesEnabled,
       errors:result?.errors, wordTimings:result?.wordTimings, hasRecording:state.hasRecording,
       beforeAudio(){stopReference();session.stopPlayback();}, playOwn:(s,e)=>session.play(s,e),
       onClose:()=>el('feedback').close()});
@@ -163,8 +166,8 @@ async function startStudio() {
     if (analyzing && s.estimate != null) label += ' · '+t('estimated')+' '+num(Math.round(s.estimate))+' '+t('seconds');
     if (el('practice-state').textContent !== label) el('practice-state').textContent = label;
     const action = recording ? 'finish':'record';
-    if (el('record').dataset.action !== action+lang) {
-      buttonContent(el('record'),recording?'stop':'mic',t(action)); el('record').dataset.action = action+lang;
+    if (el('record').dataset.action !== action+user.preferredLanguage) {
+      buttonContent(el('record'),recording?'stop':'mic',t(action)); el('record').dataset.action = action+user.preferredLanguage;
     }
     el('record').disabled = analyzing || waiting; el('upload').hidden = busy; el('cancel').hidden = !busy;
     el('level').hidden = !recording; el('level').value = s.level ?? 0;
@@ -180,9 +183,9 @@ async function startStudio() {
   }
 
   const session = createSession({
-    getSelection:()=>({surah:surah.id,startAyah:first,endAyah:last}), t, endpoints:config.analysisEndpoints,
+    user, getSelection:()=>surah.getAyahRange(first, last), t,
     allowConsent:health.retentionEnabled === true,
-    onResult(r){result = r; renderPassage(); if (el('feedback').open) showCard();},
+    onResult(summary, errors){result = { ...summary, errors }; renderPassage(); if (el('feedback').open) showCard();},
     onReset(){result = null; renderPassage();}, onState:renderState
   });
   function clearSelection() {
@@ -197,11 +200,11 @@ async function startStudio() {
   for (const id of ['language','card-language']) {
     el(id).replaceChildren(...languages.map(l => new Option(l.name,l.code)));
   }
-  el('transliteration').checked = read('transliteration') === 'true';
-  el('advanced').checked = read('advanced') !== 'false';
+  el('transliteration').checked = user.transliterationEnabled;
+  el('advanced').checked = user.advancedRulesEnabled;
   document.querySelectorAll('i[data-icon]').forEach(i => i.innerHTML = icon(i.dataset.icon));
   el('card-language').onchange = el('language').onchange = e => {
-    lang=e.target.value; write('language', lang); setLocale(); renderLibrary(); renderPassage(); session.refresh();
+    user.setLanguage(e.target.value); setLocale(); renderLibrary(); renderPassage(); session.refresh();
     if (activeWord && el('feedback').open) showCard();
   };
   el('search').oninput = renderLibrary;
@@ -211,8 +214,8 @@ async function startStudio() {
   };
   el('surah-list').onclick = e => {
     const b = e.target.closest('button[data-id]'); if (!b) return;
-    clearSelection(); surah = library.find(s => s.id === Number(b.dataset.id));
-    first = 1; last = surah.ayahs.length;
+    clearSelection(); surah = library.find(s => s.surahNumber === Number(b.dataset.id));
+    first = 1; last = surah.getAyahList().length;
     el('library').classList.remove('expanded'); el('menu-toggle').setAttribute('aria-expanded','false');
     renderLibrary(); renderPassage();
   };
@@ -223,7 +226,10 @@ async function startStudio() {
     const next = Number(e.target.value); clearSelection(); last = next; first = Math.min(first,last); renderPassage();
   };
   for (const id of ['transliteration','advanced']) el(id).onchange = () => {
-    write(id,String(checkbox(id))); renderPassage(); if (activeWord && el('feedback').open) showCard();
+    if (id === 'advanced') user.toggleAdvancedRules();
+    else user.toggleTransliteration();
+    renderPassage();
+    if (activeWord && el('feedback').open) showCard();
   };
   el('card-advanced').onchange = () => {
     el('advanced').checked = checkbox('card-advanced'); el('advanced').onchange();
@@ -234,7 +240,7 @@ async function startStudio() {
   };
   el('feedback').addEventListener('close',()=>{clearCorrection(el('card-mount'));session.stopPlayback();activeWord=null;});
   el('feedback').onclick = e => {if (e.target === el('feedback')) el('feedback').close();};
-  el('guide-button').onclick = () => {stopAll();openGuide(lang);};
+  el('guide-button').onclick = () => {stopAll();openGuide(user.preferredLanguage);};
   el('listen').onclick = playRange;
   el('record').onclick = () => {if (state.phase === 'recording') session.stop(); else {stopAll(); session.start();}};
   el('cancel').onclick = () => session.cancel();
