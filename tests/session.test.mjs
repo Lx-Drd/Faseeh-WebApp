@@ -41,6 +41,7 @@ test("tries fallback on busy, sends inclusive range, and omits identifying data 
     assert.equal(urls.length, 2);
     assert.deepEqual(result, [success]);
     assert.equal(states.at(-1).phase, "ready");
+    assert.equal(session.recording.status, "analyzed");
   } finally { session.destroy(); }
 });
 
@@ -51,6 +52,7 @@ test("refusal and size limits produce no result and never retry content failures
   try {
     await session.upload(blob());
     assert.equal(states.at(-1).messageKey, "mismatch");
+    assert.equal(session.recording.status, "error");
     await session.upload({ size: 25_000_000 + 1 });
     assert.equal(states.at(-1).messageKey, "too_large");
     assert.deepEqual(result, []);
@@ -67,10 +69,13 @@ test("selection reset aborts analysis and suppresses a late response", async () 
   });
   const upload = session.upload(blob());
   await started;
+  const previousRecording = session.recording;
+  assert.equal(previousRecording.status, "analyzing");
   session.reset();
   assert.equal(signal.aborted, true);
   finishRequest(json(success));
   await upload;
+  assert.equal(previousRecording.status, "discarded");
   assert.equal(states.at(-1).hasRecording, false);
   assert.deepEqual(result, []);
 });

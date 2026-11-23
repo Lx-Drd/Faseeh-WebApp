@@ -1,9 +1,23 @@
+let phoneticLibrary;
+
+function loadPhoneticLibrary() {
+  phoneticLibrary ??= fetch(new URL('./data/phonetics.json', import.meta.url)).then(response => {
+    if (!response.ok) throw new Error('Cannot load the phonetic library.');
+    return response.json();
+  }).catch(error => {
+    phoneticLibrary = undefined;
+    throw error;
+  });
+  return phoneticLibrary;
+}
+
 /** One catalog entry, including the word positions used by both audio and feedback. */
 export class Ayah {
   #surahNumber;
   #ayahNumber;
   #uthmaniText;
   #transliteration;
+  #phonetics;
 
   constructor(surahNumber, { number, text = '', transliteration = '', words = [], audio = null }) {
     this.#surahNumber = surahNumber;
@@ -17,6 +31,20 @@ export class Ayah {
 
   get surahNumber() { return this.#surahNumber; }
   get ayahNumber() { return this.#ayahNumber; }
+  async loadReferenceData() {
+    if (this.#phonetics) return;
+    const request = loadPhoneticLibrary();
+    const library = await request;
+    const entries = library?.[this.#surahNumber + ':' + this.#ayahNumber];
+    if (!Array.isArray(entries) || entries.length !== this.words.length ||
+        !entries.every(text => typeof text === 'string' && text.length > 0)) {
+      if (phoneticLibrary === request) phoneticLibrary = undefined;
+      throw new Error('Missing phonetic reference for the selected ayah.');
+    }
+    this.#phonetics = entries;
+  }
+
+  getReferencePhonetic(positionIndex) { return this.#phonetics?.[positionIndex] ?? ''; }
   getUthmaniText() { return this.#uthmaniText; }
   getTransliteration() { return this.#transliteration; }
 }

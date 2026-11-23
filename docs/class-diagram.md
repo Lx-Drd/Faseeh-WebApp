@@ -17,6 +17,7 @@ classDiagram
         -int ayahNumber
         -String uthmaniText
         -String transliteration
+        +loadReferenceData() void
         +getUthmaniText() String
         +getTransliteration() String
     }
@@ -36,6 +37,7 @@ classDiagram
         -float duration
         -DateTime timestamp
         -String status
+        +setStatus(String status) void
         +requestMicPermission() Boolean
         +startRecord() void
         +stopRecord() Blob
@@ -101,9 +103,9 @@ classDiagram
 1. **Select a passage.** Loading the catalog creates a Surah and its owned Ayah instances. An inclusive range returns references to those same ayahs. The reader uses the supplied Uthmani text, selectable words and optional transliteration. [Library](../web/library.js) · [Reader](../web/studio.js)
 2. **Make a recording.** The anonymous User creates an AudioRecording bound to that user, one analysis engine and a nonempty sequence of consecutive ayahs. Microphone recording and file upload populate the same audio field. The user ID stays in the page session. Only language and display preferences persist. [User](../web/user.js) · [Audio recording](../web/audio-recording.js)
 3. **Analyze the completed audio.** The engine submits the selected range and audio, handles replica failover, and locates each error by ayah and zero-based word position. The recording also carries the server’s coverage, score and playback timings. [Analysis client](../web/ai-engine.js) · [Python inference](../muaalem_engine.py)
-4. **Open a word.** A lookup starts with an Ayah and word position. Opening a highlighted word starts with a PronunciationError. Each active card focuses on at most one error. When several findings concern the same word, the learner can switch between them inside the dialog. Each card owns its transcription, articulation guide and expert audio. [Correction interface](../web/correction.js) · [Word study classes](../web/word-study.js)
+4. **Open a word.** A lookup starts with an Ayah and word position. Each PronunciationError creates its own CorrectionInterface during analysis. Opening the finding loads its transcription, articulation guide and expert audio. When several findings concern the same word, the learner can switch between them inside the dialog. [Correction interface](../web/correction-interface.js) · [Word study classes](../web/word-media.js)
 
-File loading, permission requests, stopping the recorder and inference return promises for the values shown in the diagram. Playback also reports whether it started successfully. The articulation image is an accessible SVG. Word audio uses a timed excerpt of the bundled ayah recording.
+The sequence diagrams add `Ayah.loadReferenceData()` and `AudioRecording.setStatus(status)` to the original class operations. File and reference loading, microphone permission, stopping the recorder and inference return promises. The articulation image is an accessible SVG. Word audio uses a timed excerpt of the bundled ayah recording. [Sequence diagrams](sequence-diagrams.md)
 
 ## Verification
 

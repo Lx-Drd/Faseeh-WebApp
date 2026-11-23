@@ -63,7 +63,6 @@ export class AIEngine {
       if (contributorName) form.append('contributorName', contributorName);
     }
 
-    recording.status = 'analyzing';
     let code = 'unavailable';
     for (const url of [this.#serverUrl, ...this.#fallbackUrls]) {
       signal.throwIfAborted();
@@ -88,7 +87,6 @@ export class AIEngine {
             return new PronunciationError(ayah, this, finding);
           });
           recording.analysisResult = body;
-          recording.status = 'ready';
           return errors;
         }
         code = response.ok ? 'unavailable' : apiError(response, body);
@@ -101,7 +99,6 @@ export class AIEngine {
       }
       if (!RETRYABLE.has(code) || code === 'no_connection') break;
     }
-    recording.status = 'error';
     throw new Error(code);
   }
 }

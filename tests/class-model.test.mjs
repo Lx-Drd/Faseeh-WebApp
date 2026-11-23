@@ -58,6 +58,25 @@ test('a user remembers preferences and can own several independent recordings of
   } finally { delete globalThis.localStorage; }
 });
 
+test('selected ayahs retry unavailable or incomplete references and share the successful catalog fetch', async t => {
+  const [first, second] = ikhlas.getAyahRange(1, 2);
+  const references = JSON.parse(readFileSync(new URL('../web/data/phonetics.json', import.meta.url)));
+  let requests = 0;
+  t.mock.method(globalThis, 'fetch', async url => {
+    assert.ok(url.pathname.endsWith('/data/phonetics.json'));
+    requests++;
+    if (requests === 1) return new Response(null, { status: 503 });
+    return Response.json(requests === 2 ? {} : references);
+  });
+  await assert.rejects(first.loadReferenceData(), /Cannot load/);
+  await assert.rejects(first.loadReferenceData(), /Missing phonetic reference/);
+  await Promise.all([first.loadReferenceData(), second.loadReferenceData()]);
+  await first.loadReferenceData();
+  assert.equal(requests, 3);
+  assert.equal(first.getReferencePhonetic(1), references['112:1'][1]);
+  assert.equal(second.getReferencePhonetic(0), references['112:2'][0]);
+});
+
 test('the engine returns located errors and a card composes its own three study objects for correction and lookup', async t => {
   const engine = new AIEngine('/api/analyze');
   const ayahs = ikhlas.getAyahRange(1, 2);
@@ -66,14 +85,18 @@ test('the engine returns located errors and a card composes its own three study 
   take.setAudioData(file, 3);
   assert.equal(take.getAudioData(), file);
   const body = { surah: 112, startAyah: 1, endAyah: 1, totalWords: 4, correctWords: 3, percentage: 75,
-    wordTimings: [], errors: [{ ayah: 1, wordIndex: 3, type: 'pronunciation', letter: 'ح', phonetic: 'أَحَدْ' }] };
+    wordTimings: [], errors: [
+      { ayah: 1, wordIndex: 3, type: 'pronunciation', letter: 'ح', phonetic: 'أَحَدْ' },
+      { ayah: 1, wordIndex: 3, type: 'vowel', letter: 'د' },
+    ] };
   t.mock.method(globalThis, 'fetch', async (url, request) => {
     assert.equal(url, engine.serverUrl);
     assert.equal(request.body.get('endAyah'), '2');
     return Response.json(body);
   });
   try {
-    const [issue] = await engine.detectErrors(take);
+    take.setStatus('analyzing');
+    const [issue, other] = await engine.detectErrors(take);
     assert.ok(issue instanceof PronunciationError);
     assert.equal(issue.detectedBy, engine);
     assert.equal(issue.ayah, ayahs[0]);
@@ -83,8 +106,16 @@ test('the engine returns located errors and a card composes its own three study 
     assert.equal(issue.errorType, 'pronunciation');
     assert.notEqual(issue.getRuleExplanation('ar'), issue.getRuleExplanation('en'));
     assert.equal(take.analysisResult.endAyah, 1);
-    assert.equal(take.status, 'ready');
-    const view = new CorrectionInterface({}, { language: 'en' });
+    assert.equal(take.status, 'analyzing', 'The session marks completion after the engine returns.');
+    const view = issue.correctionInterface;
+    assert.ok(view instanceof CorrectionInterface);
+    assert.notEqual(view.interfaceId, other.correctionInterface.interfaceId);
+    for (const finding of [issue, other]) {
+      const card = finding.correctionInterface;
+      assert.equal(card.isUnifiedView, false);
+      assert.ok(!card.phoneticTranscription && !card.articulationGuide && !card.expertAudio);
+    }
+    view.attach({}, { language: 'en' });
     view.loadErrorDetails(issue);
     assert.equal(view.ayah, ayahs[0]);
     assert.equal(view.error, issue);
@@ -97,10 +128,13 @@ test('the engine returns located errors and a card composes its own three study 
     assert.ok(view.expertAudio instanceof ExpertAudio);
     assert.ok(view.expertAudio.getReciterName().includes('Minshawi'));
     assert.equal(view.expertAudio.hasWordClip, true);
-    view.loadWordDetails(ayahs[1], 0, 'ل');
-    assert.equal(view.error, null);
-    assert.equal(view.letter, 'ل');
-    assert.equal(view.ayah, ayahs[1]);
+    const lookup = new CorrectionInterface();
+    lookup.loadWordDetails(ayahs[1], 0, 'ل');
+    assert.equal(lookup.error, null);
+    assert.equal(lookup.letter, 'ل');
+    assert.equal(lookup.ayah, ayahs[1]);
+    assert.equal(view.error, issue);
+    assert.equal(other.correctionInterface.ayah, null);
   } finally { take.dispose(); }
 });
 
@@ -130,7 +164,7 @@ test('stopRecord resolves with the same complete Blob returned by getAudioData a
     assert.equal(completed, take.getAudioData());
     assert.equal(await completed.text(), 'complete audio');
     assert.ok(take.duration >= 0);
-    assert.equal(take.status, 'captured');
+    assert.equal(take.status, 'recorded');
     assert.equal(released, true);
   } finally { take.dispose(); }
 });

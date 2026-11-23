@@ -19,9 +19,9 @@ Open **http://127.0.0.1:8000/** on the same machine. The backend serves the comp
 
 For a GPU install, HTTPS hosting, a Hugging Face Docker Space and primary/fallback configuration, see [deployment instructions](DEPLOYMENT.md). For library sources and model attribution, see [study library](web/data/SOURCES.md) and [model details](web/data/MODEL.md).
 
-## Class design
+## Class and sequence diagrams
 
-The implementation follows the supplied ten-class UML diagram. The diagram includes all 25 operations, relationship multiplicities and links to the source files used by the running studio. [Class diagram and implementation map](docs/class-diagram.md)
+The class diagram maps the ten classes and their relationships to the running studio. Four sequence diagrams trace ayah selection, microphone recording, server analysis and unified correction, including permission denial and optional Tajweed explanations. [Class diagram](docs/class-diagram.md) · [Sequence diagrams](docs/sequence-diagrams.md)
 
 ## Practice flow
 

@@ -61,6 +61,9 @@ export function isRTL(lang) {
 
 const translations = {
   "en": {
+    "loading_passage": "Loading selected ayahs…",
+    "reference_error": "The reference data for these ayahs could not be loaded.",
+    "retry": "Try again",
     "studio": "Practice studio",
     "guide": "How to practice",
     "language": "Language",
@@ -81,7 +84,7 @@ const translations = {
     "upload": "Upload audio",
     "cancel": "Cancel",
     "recording": "Recording",
-    "analyzing": "Analyzing recitation",
+    "analyzing": "Analyzing audio…",
     "requesting": "Waiting for microphone permission",
     "ready": "Ready to practice",
     "complete": "Analysis complete",
@@ -125,6 +128,9 @@ const translations = {
     "step5": "Choose your language. Turn transliteration and advanced rules on or off."
   },
   "ar": {
+    "loading_passage": "جارٍ تحميل الآيات المحددة…",
+    "reference_error": "تعذّر تحميل البيانات المرجعية لهذه الآيات.",
+    "retry": "إعادة المحاولة",
     "studio": "استوديو التدريب",
     "guide": "طريقة التدريب",
     "language": "اللغة",
@@ -189,6 +195,9 @@ const translations = {
     "step5": "اختر لغتك. يمكنك إظهار النقل بالحروف اللاتينية وأحكام التجويد المتقدمة أو إخفاؤهما."
   },
   "es": {
+    "loading_passage": "Cargando las aleyas seleccionadas…",
+    "reference_error": "No se pudieron cargar los datos de referencia de estas aleyas.",
+    "retry": "Reintentar",
     "studio": "Estudio de práctica",
     "guide": "Cómo practicar",
     "language": "Idioma",
@@ -253,6 +262,9 @@ const translations = {
     "step5": "Elige tu idioma. Activa o desactiva la transliteración y las reglas avanzadas."
   },
   "fr": {
+    "loading_passage": "Chargement des versets sélectionnés…",
+    "reference_error": "Impossible de charger les données de référence de ces versets.",
+    "retry": "Réessayer",
     "studio": "Espace de pratique",
     "guide": "Comment pratiquer",
     "language": "Langue",
@@ -317,6 +329,9 @@ const translations = {
     "step5": "Choisissez votre langue. Activez ou désactivez la translittération et les règles avancées."
   },
   "zh": {
+    "loading_passage": "正在加载所选经文…",
+    "reference_error": "无法加载这些经文的参考资料。",
+    "retry": "重试",
     "studio": "练习室",
     "guide": "练习指南",
     "language": "语言",
@@ -381,6 +396,9 @@ const translations = {
     "step5": "选择语言，并按需开启或关闭拉丁字母转写和高级规则。"
   },
   "ur": {
+    "loading_passage": "منتخب آیات لوڈ ہو رہی ہیں…",
+    "reference_error": "ان آیات کا حوالہ جاتی مواد لوڈ نہیں ہو سکا۔",
+    "retry": "دوبارہ کوشش کریں",
     "studio": "مشق گاہ",
     "guide": "مشق کا طریقہ",
     "language": "زبان",
@@ -445,6 +463,9 @@ const translations = {
     "step5": "زبان منتخب کریں۔ رومن تلفظ اور تفصیلی قواعد اپنی ضرورت کے مطابق دکھائیں یا چھپائیں۔"
   },
   "id": {
+    "loading_passage": "Memuat ayat yang dipilih…",
+    "reference_error": "Data rujukan untuk ayat ini gagal dimuat.",
+    "retry": "Coba lagi",
     "studio": "Ruang latihan",
     "guide": "Cara berlatih",
     "language": "Bahasa",
@@ -509,6 +530,9 @@ const translations = {
     "step5": "Pilih bahasa. Tampilkan atau sembunyikan transliterasi dan hukum tajwid lanjutan."
   },
   "bn": {
+    "loading_passage": "নির্বাচিত আয়াতগুলি লোড হচ্ছে…",
+    "reference_error": "এই আয়াতগুলির সহায়ক তথ্য লোড করা যায়নি।",
+    "retry": "আবার চেষ্টা করুন",
     "studio": "অনুশীলন কক্ষ",
     "guide": "অনুশীলনের নিয়ম",
     "language": "ভাষা",
@@ -573,6 +597,9 @@ const translations = {
     "step5": "ভাষা নির্বাচন করুন। লাতিন অক্ষরে উচ্চারণ এবং বিস্তারিত নিয়ম চালু বা বন্ধ করুন।"
   },
   "pa": {
+    "loading_passage": "چُڻیاں آیتاں لوڈ ہو رہیاں نیں…",
+    "reference_error": "ایہناں آیتاں دا حوالہ مواد لوڈ نئیں ہو سکیا۔",
+    "retry": "فیر کوشش کرو",
     "studio": "مشق دا کمرہ",
     "guide": "مشق دا طریقہ",
     "language": "بولی",
@@ -637,6 +664,9 @@ const translations = {
     "step5": "اپنی بولی چُݨو۔ رومن اکھراں وچ تلفظ تے تفصیلی قاعدے وکھاؤ یا لُکاؤ۔"
   },
   "fa": {
+    "loading_passage": "در حال بارگذاری آیات انتخاب‌شده…",
+    "reference_error": "داده‌های مرجع این آیات بارگذاری نشد.",
+    "retry": "تلاش دوباره",
     "studio": "محیط تمرین",
     "guide": "روش تمرین",
     "language": "زبان",
@@ -701,6 +731,9 @@ const translations = {
     "step5": "زبان خود را انتخاب کنید. آوانویسی و قواعد پیشرفته را به دلخواه نمایش دهید یا پنهان کنید."
   },
   "tr": {
+    "loading_passage": "Seçilen ayetler yükleniyor…",
+    "reference_error": "Bu ayetlerin başvuru bilgileri yüklenemedi.",
+    "retry": "Yeniden dene",
     "studio": "Alıştırma alanı",
     "guide": "Nasıl çalışılır?",
     "language": "Dil",
@@ -765,6 +798,9 @@ const translations = {
     "step5": "Dilinizi seçin. Latin harfleriyle okunuşu ve ileri kuralları açıp kapatabilirsiniz."
   },
   "ps": {
+    "loading_passage": "ټاکل شوي آیتونه بارېږي…",
+    "reference_error": "د دې آیتونو مرستندویه معلومات بار نه شول.",
+    "retry": "بیا هڅه وکړئ",
     "studio": "د تمرین خونه",
     "guide": "څنګه تمرین وکړئ",
     "language": "ژبه",
@@ -829,6 +865,9 @@ const translations = {
     "step5": "خپله ژبه وټاکئ. لاتیني تلفظ او پرمختللي قواعد ښکاره یا پټ کړئ."
   },
   "ha": {
+    "loading_passage": "Ana loda ayoyin da aka zaɓa…",
+    "reference_error": "Ba a iya loda bayanan da suka shafi waɗannan ayoyi ba.",
+    "retry": "Sake gwadawa",
     "studio": "Ɗakin atisaye",
     "guide": "Yadda ake atisaye",
     "language": "Harshe",

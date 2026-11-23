@@ -49,13 +49,15 @@ export class AudioRecording {
   get timestamp() { return new Date(this.#timestamp); }
   get duration() { return this.#duration; }
   get status() { return this.#status; }
-  set status(value) { this.#status = value; }
+  set status(value) { this.setStatus(value); }
+  setStatus(value) { this.#status = value; }
+  get hasAudio() { return this.#audioData !== null; }
   getAudioData() { return this.#audioData; }
 
   async requestMicPermission() {
     if (this.#stream) return true;
     const version = ++this.#permissionVersion;
-    this.#status = 'requesting';
+    this.setStatus('requesting');
     try {
       if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
         throw new Error('Microphone capture unavailable');
@@ -67,12 +69,12 @@ export class AudioRecording {
       }
       this.#stream = stream;
       this.permissionError = '';
-      this.#status = 'permitted';
+      this.setStatus('permitted');
       return true;
     } catch (error) {
       if (version === this.#permissionVersion) {
         this.permissionError = ['NotAllowedError', 'SecurityError'].includes(error.name) ? 'mic_denied' : 'mic_unavailable';
-        this.#status = 'error';
+        this.setStatus('error');
       }
       return false;
     }
@@ -120,7 +122,7 @@ export class AudioRecording {
         const pending = this.#pendingStop;
         this.#pendingStop = null;
         this.#releaseMic();
-        this.#status = 'error';
+        this.setStatus('error');
         if (pending) pending.reject(new Error(code));
         else onFailure(code);
       };
@@ -148,10 +150,10 @@ export class AudioRecording {
       this.#connectMeter();
       this.#startedAt = performance.now();
       recorder.start(250);
-      this.#status = 'recording';
+      this.setStatus('recording');
     } catch {
       this.#releaseMic();
-      this.#status = 'error';
+      this.setStatus('error');
       throw new Error('mic_unavailable');
     }
   }
@@ -165,12 +167,12 @@ export class AudioRecording {
       pending.reject = reject;
     });
     this.#pendingStop = pending;
-    this.#status = 'stopping';
+    this.setStatus('stopping');
     try { this.#recorder.stop(); }
     catch {
       this.#pendingStop = null;
       this.#releaseMic();
-      this.#status = 'error';
+      this.setStatus('error');
       throw new Error('mic_unavailable');
     }
     return pending.promise;
@@ -181,7 +183,7 @@ export class AudioRecording {
     const pending = this.#pendingStop;
     this.#pendingStop = null;
     this.#releaseMic();
-    this.#status = this.#audioData ? 'captured' : 'idle';
+    this.setStatus(this.hasAudio ? 'recorded' : 'idle');
     pending?.reject(new DOMException('Capture cancelled', 'AbortError'));
   }
 
@@ -194,7 +196,7 @@ export class AudioRecording {
     this.#audioData = blob;
     this.analysisResult = null;
     this.#duration = seconds;
-    this.#status = 'captured';
+    this.setStatus('recorded');
   }
 
   async measureDuration(signal) {
@@ -249,6 +251,6 @@ export class AudioRecording {
     if (this.#url) URL.revokeObjectURL(this.#url);
     this.#url = this.#audioData = this.analysisResult = null;
     this.#duration = 0;
-    this.#status = 'discarded';
+    this.setStatus('discarded');
   }
 }

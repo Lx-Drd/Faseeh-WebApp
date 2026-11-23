@@ -44,7 +44,7 @@ export function createSession({
     const timed = phase === 'recording' || phase === 'analyzing';
     const elapsed = timed ? Math.floor((performance.now() - startTime) / 1000) : lastElapsed;
     onState({ phase, elapsed, estimate, level: recording?.level ?? 0,
-      hasRecording: Boolean(recording?.getAudioData()), messageKey, message: messageKey ? t(messageKey) : '' });
+      hasRecording: recording?.hasAudio ?? false, messageKey, message: messageKey ? t(messageKey) : '' });
   }
 
   function setPhase(next, error = '') {
@@ -82,15 +82,16 @@ export function createSession({
   }
 
   function fail(error) {
-    if (recording) recording.status = 'error';
+    recording?.setStatus('error');
     setPhase('error', error);
   }
 
-  async function analyze(take, signal) {
+  async function analyzeRecitation(take, signal) {
     if (navigator.onLine === false) return fail('no_connection');
     const speed = previousSpeed();
     const predict = () => take.duration && speed ? Math.max(1, Math.round(take.duration * speed)) : null;
     estimate = predict();
+    take.setStatus('analyzing');
     setPhase('analyzing');
     try {
       if (!take.duration) {
@@ -102,6 +103,7 @@ export function createSession({
       }
       const errors = await take.analyzedBy.detectErrors(take, { signal, consent: allowConsent && consent, contributorName });
       if (signal.aborted) return;
+      take.setStatus('analyzed');
       const elapsed = (performance.now() - startTime) / 1000;
       rememberSpeed(elapsed, take.duration);
       lastElapsed = Math.floor(elapsed);
@@ -117,7 +119,7 @@ export function createSession({
     try {
       const take = prepare();
       take.setAudioData(file);
-      await analyze(take, operation.signal);
+      await analyzeRecitation(take, operation.signal);
     } catch (error) { fail(error.message); }
   }
 
@@ -141,7 +143,7 @@ export function createSession({
     const signal = operation.signal;
     try {
       await take.stopRecord();
-      if (!signal.aborted) await analyze(take, signal);
+      if (!signal.aborted) await analyzeRecitation(take, signal);
     } catch (error) {
       if (!signal.aborted) fail(error.message);
     }

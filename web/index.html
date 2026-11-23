@@ -30,16 +30,17 @@
       <div class="hero-inner"><p class="eyebrow"><i data-icon="book"></i><span data-i="studio">Practice studio</span></p>
         <h1 id="hero-title"></h1>
         <div class="hero-meta"><span id="hero-arabic" class="quran" lang="ar" dir="rtl"></span><b aria-hidden="true">·</b><span id="ayah-count"></span></div>
-        <button id="listen" class="listen"><i data-icon="play"></i><span data-i="listen">Listen</span></button>
+        <button id="listen" class="listen" disabled><i data-icon="play"></i><span data-i="listen">Listen</span></button>
         <small id="reciter" data-i="reciter">Minshawi · Murattal</small>
       </div>
     </section><p class="error" id="audio-message" role="status" hidden></p>
     <section id="practice" class="practice panel" aria-labelledby="practice-title">
       <div class="practice-row"><div class="practice-info"><span class="mic-disc"><i data-icon="wave"></i></span><div><h2 id="practice-title" data-i="practice">Recitation practice</h2>
         <p id="practice-state" role="status"></p></div></div>
-        <div class="practice-controls"><button class="primary" id="record"><i data-icon="mic"></i><span data-i="record">Record</span></button>
-          <button class="secondary" id="upload"><i data-icon="upload"></i><span data-i="upload">Upload audio</span></button>
-          <input id="upload-file" type="file" accept="audio/*,.webm,.mp4,.m4a,.ogg,.opus,.wav,.mp3,.flac" hidden>
+        <div class="practice-controls"><button class="primary" id="record" disabled><i data-icon="mic"></i><span data-i="record">Record</span></button>
+          <button class="secondary" id="upload" disabled><i data-icon="upload"></i><span data-i="upload">Upload audio</span></button>
+          <input id="upload-file" type="file" accept="audio/*,.webm,.mp4,.m4a,.ogg,.opus,.wav,.mp3,.flac" hidden disabled>
+          <button class="secondary" id="retry-reference" hidden data-i="retry"></button>
           <button class="secondary" id="cancel" hidden data-i="cancel"></button></div>
       </div>
       <aside class="ai-notice" id="ai-notice"><i data-icon="info"></i><div><p data-i="notice"></p><p id="notice-ar" dir="rtl" lang="ar"></p></div></aside>
@@ -49,12 +50,13 @@
     </section>
     <section id="summary" class="summary" aria-live="polite" hidden></section>
     <section class="passage panel">
-      <div class="passage-heading"><div><p class="eyebrow forest"><i data-icon="book"></i><span data-i="passage">Selected passage</span></p>
+      <div class="passage-heading"><div><p class="eyebrow forest"><i data-icon="book"></i><span id="passage-label" data-i="passage">Selected passage</span></p>
         <h2 id="range-heading"></h2></div>
         <div id="range"><label><span data-i="from">From ayah</span><select id="from-ayah"></select></label><span class="range-dash" aria-hidden="true">–</span><label><span data-i="to">To ayah</span><select id="to-ayah"></select></label></div>
       </div>
       <p class="word-hint"><i data-icon="pointer"></i><span data-i="select_word">Select a word for pronunciation</span></p>
-      <div id="verses"></div>
+      <span id="correction-label" hidden></span>
+      <div id="verses" role="region" aria-labelledby="passage-label range-heading" aria-busy="true"></div>
     </section>
   </div>
 </main>
