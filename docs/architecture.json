@@ -1,0 +1,59 @@
+{
+  "layers": {
+    "presentation": [
+      "/web/studio.js",
+      "/web/correction.js",
+      "/web/guide.js",
+      "/web/icons.js"
+    ],
+    "practice": [
+      "/web/session.js"
+    ],
+    "resources": [
+      "/web/card-text.js",
+      "/web/speech-qualities.js",
+      "/web/i18n.js",
+      "/web/config.js"
+    ],
+    "api": [
+      "/main.py"
+    ],
+    "recording_service": [
+      "/recording_service.py"
+    ],
+    "inference": [
+      "/muaalem_engine.py"
+    ],
+    "library_tools": [
+      "/tools/"
+    ],
+    "legacy": [
+      "/service.py",
+      "/analysis.py",
+      "/reference.py",
+      "/rules.py",
+      "/quran_data.py"
+    ]
+  },
+  "allow": {
+    "presentation": [
+      "practice",
+      "resources"
+    ],
+    "practice": [
+      "resources"
+    ],
+    "resources": [],
+    "api": [
+      "recording_service"
+    ],
+    "recording_service": [
+      "inference"
+    ],
+    "inference": [],
+    "library_tools": [
+      "inference"
+    ],
+    "legacy": []
+  }
+}

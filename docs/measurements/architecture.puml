@@ -1,0 +1,35 @@
+@startuml
+title Faseeh · Stage 1 · Requirements and use cases
+top to bottom direction
+skinparam dpi 150
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam defaultFontColor #173A32
+skinparam ArrowColor #45665D
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+skinparam componentBorderColor #588173
+skinparam componentBackgroundColor #F3F8F4
+skinparam packageBorderColor #98AEA5
+
+package "Learner's browser" {
+  [Reader and controls\nstudio.js] as Studio
+  [Capture, upload and analysis\nsession.js] as Session
+  [Word lookup and correction\ncorrection.js] as Feedback
+  artifact "Study library\nVerse text, phonetics and expert audio" as Library
+  Studio -right-> Session : start or stop
+  Studio --> Feedback : open a word
+  Studio --> Library : select ayahs
+  Feedback --> Library : read reference
+}
+
+package "AI server" {
+  [FastAPI\nmain.py] as Api
+  [Audio validation and decoding\nrecording_service.py] as Service
+  [Quran Muaalem inference\nmuaalem_engine.py] as Model
+  Api --> Service
+  Service --> Model
+}
+Session <--> Api : HTTPS POST /api/analyze\nCompleted audio and ayah range\nFindings, score and timings
+@enduml
