@@ -25,6 +25,8 @@ The class diagram maps the ten classes and their relationships to the running st
 
 The three development snapshots have OODM CLI dashboards for structural traceability, behavioral fidelity, use case coverage and architectural compliance. The measurement pack includes the architecture figure, scoring inputs and instructions for running the same comparison on Windows. [Experiment results and downloads](docs/measurements/README.md)
 
+This branch contains the **Stage 3 application**. Stages 1 and 2 each have a separate branch with the application, architecture and measurements for that version. Each OODM run scans one source folder. [Stage 1 · Faseeh-v2gpt](https://github.com/Lx-Drd/Faseeh-WebApp/tree/Faseeh-v2gpt) · [Stage 2 · Faseeh-v3gpt](https://github.com/Lx-Drd/Faseeh-WebApp/tree/Faseeh-v3gpt)
+
 ## Practice flow
 
 | Use cases from SRD v2.1 | In the studio |
