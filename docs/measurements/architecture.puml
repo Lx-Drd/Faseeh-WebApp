@@ -1,0 +1,39 @@
+@startuml
+title Faseeh · Stage 2 · Requirements, use cases and class diagram
+top to bottom direction
+skinparam dpi 150
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam defaultFontColor #173A32
+skinparam ArrowColor #45665D
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+skinparam componentBorderColor #588173
+skinparam componentBackgroundColor #F3F8F4
+skinparam packageBorderColor #98AEA5
+
+package "Learner's browser" {
+  [Studio and CorrectionInterface\nstudio.js · correction.js] as Studio
+  [Practice session\nsession.js] as Session
+  [Surah and Ayah\nlibrary.js] as Library
+  [User and AudioRecording\nuser.js · audio-recording.js] as Recording
+  [AIEngine\nai-engine.js] as Engine
+  [PronunciationError, PhoneticTranscription,\nArticulationGuide and ExpertAudio\nword-study.js] as Study
+  Studio -right-> Session : start or stop
+  Studio --> Library : select ayahs
+  Studio --> Study : show word details
+  Session --> Recording : capture audio
+  Session --> Engine : detect errors
+  Engine --> Study : create findings
+}
+
+package "AI server" {
+  [FastAPI\nmain.py] as Api
+  [Audio validation and decoding\nrecording_service.py] as Service
+  [Quran Muaalem inference\nmuaalem_engine.py] as Model
+  Api --> Service
+  Service --> Model
+}
+Engine <--> Api : HTTPS POST /api/analyze\nCompleted audio and ayah range\nFindings, score and timings
+@enduml

@@ -1,5 +1,7 @@
 # Faseeh · فصيح
 
+**Experiment stage 2.** Requirements, use cases and the class diagram. [Stage 2 architecture and OODM reports](docs/measurements/README.md)
+
 Faseeh is a browser-based Qur’an recitation practice studio. Choose a surah and ayah range, listen to Sheikh Muhammad Siddiq al-Minshawi’s murattal recitation, and select any word to study its pronunciation. Record with the microphone or upload audio to get word-level feedback from the pretrained Quran Muaalem model. The static library contains seven surahs, 103 ayahs and 388 timed words.
 
 ## Run locally

@@ -1,0 +1,12 @@
+UC-01. Select Surah
+UC-02. Select Ayahs
+UC-03. Look Up Word Pronunciation
+UC-04. Play Expert Audio
+UC-05. View Unified Correction
+UC-06. Record Recitation
+UC-07. Change Language
+UC-08. Toggle Transliteration
+UC-09. Toggle Advanced Rules
+UC-10. Play My Recording
+UC-11. Grant Microphone Permission
+UC-12. Analyze Recitation

@@ -1,0 +1,3 @@
+stage,application_commit,evaluation_inputs,oodm_version,structural_traceability_pct,behavioral_fidelity_pct,use_case_coverage_pct,architectural_compliance_out_of_10
+2,b445e1de48b2fd5901d13298216a76d6fc466de3,stage-inputs,2.0.2,91.3,N/A,41.7,10.0
+2,b445e1de48b2fd5901d13298216a76d6fc466de3,common-reference,2.0.2,91.3,46.9,41.7,10.0
