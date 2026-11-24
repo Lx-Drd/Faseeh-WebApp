@@ -1,0 +1,104 @@
+@startuml select-ayahs
+title Select Ayahs
+actor "User (learner)" as Learner
+boundary GUI
+participant Surah
+participant Ayah
+Learner -> GUI : selectAyahs(fromAyah, toAyah)
+GUI -> Surah : getAyahRange(fromAyah, toAyah)
+Surah --> GUI : ayahs
+loop Each ayah in the selected range
+  GUI -> Ayah : loadReferenceData()
+  GUI -> Ayah : getUthmaniText()
+  Ayah --> GUI : text
+end
+GUI --> Learner : Show selected ayahs highlighted
+@enduml
+
+@startuml record-recitation
+title Record Recitation
+actor "User (learner)" as Learner
+boundary GUI
+participant User
+participant AudioRecording
+Learner -> GUI : startRecording()
+GUI -> User : createRecording(ayahs)
+create AudioRecording
+User -> AudioRecording : constructor(user, ayahs, engine)
+User --> GUI : rec
+GUI -> AudioRecording : requestMicPermission()
+AudioRecording --> GUI : granted
+alt Permission denied
+  GUI --> Learner : Show microphone permission message
+else Permission granted
+  GUI -> AudioRecording : startRecord()
+  AudioRecording -> AudioRecording : setStatus("recording")
+  Learner -> GUI : stopRecording()
+  GUI -> AudioRecording : stopRecord()
+  AudioRecording -> AudioRecording : setStatus("recorded")
+  AudioRecording --> GUI : audioData
+  GUI -> GUI : analyzeRecitation(rec)
+  ref over GUI : Analyze Recitation
+end
+@enduml
+
+@startuml analyze-recitation
+title Analyze Recitation
+actor "User (learner)" as Learner
+boundary GUI
+participant AudioRecording
+participant AIEngine
+actor "AI Server" as Server
+participant PronunciationError
+participant CorrectionInterface
+GUI -> AudioRecording : setStatus("analyzing")
+GUI --> Learner : Show analyzing audio status
+GUI -> AIEngine : detectErrors(rec)
+AIEngine -> AudioRecording : getAudioData()
+AudioRecording --> AIEngine : audio
+AIEngine -> Server : analyze(audio, ayahs)
+Server --> AIEngine : result
+loop Each error in the result
+  create PronunciationError
+  AIEngine -> PronunciationError : constructor(ayah, engine, finding)
+  create CorrectionInterface
+  PronunciationError -> CorrectionInterface : constructor()
+end
+AIEngine --> GUI : errors
+GUI -> AudioRecording : setStatus("analyzed")
+GUI -> GUI : highlightErrors(errors)
+GUI --> Learner : Show highlighted words
+@enduml
+
+@startuml view-unified-correction
+title View Unified Correction
+actor "User (learner)" as Learner
+boundary GUI
+participant PronunciationError
+participant CorrectionInterface
+participant PhoneticTranscription
+participant ArticulationGuide
+participant ExpertAudio
+Learner -> GUI : selectHighlightedWord()
+GUI -> CorrectionInterface : loadErrorDetails(error)
+create PhoneticTranscription
+CorrectionInterface -> PhoneticTranscription : constructor(phonemeText)
+create ArticulationGuide
+CorrectionInterface -> ArticulationGuide : constructor(letters, index, pausing, language)
+create ExpertAudio
+CorrectionInterface -> ExpertAudio : constructor(ayah, positionIndex, reciterName)
+GUI -> CorrectionInterface : renderUnifiedFeedback()
+CorrectionInterface -> PhoneticTranscription : getPhoneticText()
+PhoneticTranscription --> CorrectionInterface : text
+CorrectionInterface -> ArticulationGuide : getArticulationImage()
+ArticulationGuide --> CorrectionInterface : image
+CorrectionInterface -> ArticulationGuide : getAnatomicalDescription()
+ArticulationGuide --> CorrectionInterface : description
+CorrectionInterface -> ExpertAudio : getReciterName()
+ExpertAudio --> CorrectionInterface : reciter
+opt Advanced rules enabled
+  GUI -> PronunciationError : getRuleExplanation(lang)
+  PronunciationError --> GUI : rule
+end
+GUI --> Learner : Show unified correction screen
+@enduml

@@ -23,6 +23,8 @@ For a GPU install, HTTPS hosting, a Hugging Face Docker Space and primary/fallba
 
 The class diagram maps the ten classes and their relationships to the running studio. Four sequence diagrams trace ayah selection, microphone recording, server analysis and unified correction, including permission denial and optional Tajweed explanations. [Class diagram](docs/class-diagram.md) · [Sequence diagrams](docs/sequence-diagrams.md)
 
+The three development snapshots have OODM CLI dashboards for structural traceability, behavioral fidelity, use case coverage and architectural compliance. The measurement pack includes the architecture figure, scoring inputs and instructions for running the same comparison on Windows. [Experiment results and downloads](docs/measurements/README.md)
+
 ## Practice flow
 
 | Use cases from SRD v2.1 | In the studio |

@@ -1,0 +1,4 @@
+Stage,Development inputs,Git commit,OODM version,Structural traceability (%),Behavioral fidelity (%),Use case coverage (%),Architectural compliance (out of 10)
+1,Requirements + use cases,44592797bdb452078ff9b8543283143a2d424d50,2.0.2,6.5,0.0,8.3,10.0
+2,Requirements + use cases + class diagram,b445e1de48b2fd5901d13298216a76d6fc466de3,2.0.2,91.3,46.9,41.7,10.0
+3,Requirements + use cases + class diagram + sequence diagrams,788bcd89110498a1e6e6f6913d99b84bcf7dea12,2.0.2,93.5,62.5,58.3,8.3

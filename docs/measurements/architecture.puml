@@ -1,0 +1,35 @@
+@startuml
+title Faseeh recitation practice
+top to bottom direction
+skinparam dpi 150
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam defaultFontColor #173A32
+skinparam ArrowColor #45665D
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+skinparam componentBorderColor #588173
+skinparam componentBackgroundColor #F3F8F4
+skinparam packageBorderColor #98AEA5
+
+package "Learner’s browser" {
+  [Practice studio and\ncorrection screen] as Studio
+  [Practice session and\nanalysis client] as Practice
+  [Ayahs, recordings and\npronunciation findings] as Domain
+  artifact "Study library\nText, timing, audio and diagrams" as Library
+  Studio -right-> Practice : record or upload
+  Studio --> Domain : display feedback
+  Practice --> Domain : use selected ayahs
+  Domain -left-> Library : read references
+}
+
+package "AI server" {
+  [FastAPI\nPOST /api/analyze] as API
+  [Recording service\nValidate and decode audio] as Processing
+  [Quran Muaalem model\nTranscribe and align words] as Model
+  API --> Processing
+  Processing --> Model
+}
+Practice <--> API : HTTPS\nSend audio and ayah range\nReceive score, findings and timings
+@enduml
